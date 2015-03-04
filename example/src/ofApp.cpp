@@ -5,13 +5,14 @@ void ofApp::setup()
 {
 	ofxObjLoader::load("sphere0.obj", m0); // box0
 	ofxObjLoader::load("torus1.obj", m1); // box1
-//	ofxObjLoader::load("box0.obj", m0);
-//	ofxObjLoader::load("box1.obj", m1);
+//	ofxObjLoader::load( "box0.obj", m0 );
+//	ofxObjLoader::load( "box1.obj", m1 );
 	
 	// get our polygons
 	polygons0 = ofxCSG::meshToPolygons( m0 );
 	polygons1 = ofxCSG::meshToPolygons( m1 );
 	
+	//split
 	for(auto& p0: polygons0)
 	{
 		for(auto& p1: polygons1)
@@ -20,10 +21,16 @@ void ofApp::setup()
 		}
 	}
 	
+	//classy the triangles
+	ofVec3f rayDir(0,1,0);
+	for(auto& p0: polygons0)
+	{
+		p0.classify( polygons1 );
+	}
+	
 	//set the meshes from our poygons
 	ofxCSG::setMeshFromPolygons( m0, polygons0 );
 	ofxCSG::setMeshFromPolygons( m1, polygons1 );
-	
 }
 
 //--------------------------------------------------------------

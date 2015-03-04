@@ -71,6 +71,43 @@ namespace ofxCSG
 			return areaOfTriangleSquared( a, b, c );
 		}
 		
+		
+		
+		//derived from Akira-Hayasaka's ofxRayTriangleIntersection
+		//	https://github.com/Akira-Hayasaka/ofxRayTriangleIntersection/blob/master/src/ofxRayTriangleIntersection.h
+		//	assume ray direction is normalized
+		bool intersectRay( ofVec3f rayOrigin, ofVec3f rayDir, ofVec3f* intersection = NULL )
+		{
+			float vn = rayDir.dot(normal);
+			
+			ofVec3f diff = rayOrigin - a;
+			float xpn = diff.dot( normal );
+			float distance = -xpn / vn;
+			
+			if (distance < 0) return false; // behind ray origin. fail
+			
+			ofVec3f hitPos = rayDir * distance + rayOrigin;
+			
+			if( isPointInTriangle( hitPos, a, b, c ) )
+			{
+				//it's a hit
+				if(intersection!= NULL)
+				{
+					*intersection = hitPos;
+				}
+				return true;
+			}
+			
+			//nada
+			return false;
+		}
+		
+		
+		ofVec3f getCenter()
+		{
+			return (a + b + c) / 3.;
+		}
+		
 		void draw()
 		{
 			if(classification == FRONT)
@@ -86,7 +123,7 @@ namespace ofxCSG
 			else
 			{
 				ofSetColor( 255, 255 );
-//				ofDrawTriangle( a, b, c );
+				ofDrawTriangle( a, b, c );
 			}
 			
 			ofSetColor( ofFloatColor(normal.x * .5 + .5, normal.y * .5 + .5, normal.z * .5 + .5) );
@@ -185,7 +222,6 @@ namespace ofxCSG
 			for(int i=2;i<i0.size();i++)	l0.expandToPoint( i0[i] );
 			for(int i=2;i<i1.size();i++)	l1.expandToPoint( i1[i] );
 			
-			
 			if( l0.subtract( l1 )  )
 			{
 				*overlap = l0;
@@ -232,7 +268,7 @@ namespace ofxCSG
 			
 			if( c == SPANNING || c == COPLANAR )
 			{
-				//are they coplanar?
+				//are they coplanar? if so, subtract or add the triangles
 				auto nDot = normal.dot( t.normal );
 				if( abs( nDot ) >= 1.)//do we need EPSILON here?
 				{
@@ -260,12 +296,20 @@ namespace ofxCSG
 						{
 							subd = tri.insert( trimedOverlap.b );
 						}
+						
+						//if(subd.size() > 1)
+						//{
+						//	for(auto& st: subd)
+						//	{
+						//		c = st.getClassification( t.normal, t.w );
+						//		if( c == FRONT || c == BACK )
+						//		{
+						//			st.classification = c;
+						//		}
+						//	}
+						//}
+						
 						triangles.insert( triangles.end(), subd.begin(), subd.end() );
-					}
-					
-					for(auto& tri: triangles)
-					{
-						tri.classifyWithPlane( t.normal, t.w );
 					}
 				}
 				else

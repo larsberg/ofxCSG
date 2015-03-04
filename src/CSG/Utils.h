@@ -153,11 +153,11 @@ namespace ofxCSG
 		p13 = p1 - p3;
 		p43 = p4 - p3;
 		
-		//TODO: I can't remember why these are commented out... figure out if they need to be
-		//	if (abs(p43.x) < EPSILON && abs(p43.y) < EPSILON && abs(p43.z) < EPSILON)	return false;
+		if (abs(p43.x) < EPSILON && abs(p43.y) < EPSILON && abs(p43.z) < EPSILON)	return false;
 		
 		p21 = p2 - p1;
-		//	if (abs(p21.x) < EPSILON && abs(p21.y) < EPSILON && abs(p21.z) < EPSILON)	return false;
+		
+		if (abs(p21.x) < EPSILON && abs(p21.y) < EPSILON && abs(p21.z) < EPSILON)	return false;
 		
 		d1343 = p13.x * p43.x + p13.y * p43.y + p13.z * p43.z;
 		d4321 = p43.x * p21.x + p43.y * p21.y + p43.z * p21.z;
@@ -279,5 +279,36 @@ namespace ofxCSG
 	static bool isPointInTriangle(ofVec3f p, ofVec3f a, ofVec3f b, ofVec3f c)
 	{
 		return isPointInTriangle( p, a, b, c, normalFromPoints(a, b, c) );
+	}
+	
+	
+	//derived from Akira-Hayasaka's ofxRayTriangleIntersection
+	//	https://github.com/Akira-Hayasaka/ofxRayTriangleIntersection/blob/master/src/ofxRayTriangleIntersection.h
+	//	assume ray direction is normalized
+	static bool intersectRayTriangle(ofVec3f rayOrigin, ofVec3f rayDir, ofVec3f t0, ofVec3f t1, ofVec3f t2, ofVec3f* intersection=NULL)
+	{
+		ofVec3f normal = (t2 - t1).cross( t0 - t1).normalize();
+		float vn = rayDir.dot(normal);
+		
+		ofVec3f diff = rayOrigin - t0;
+		float xpn = diff.dot(normal);
+		float distance = -xpn / vn;
+		
+		if (distance < 0) return false; // behind ray origin. fail
+		
+		ofVec3f hitPos = rayDir * distance + rayOrigin;
+		
+		if(isPointInTriangle(hitPos, t0, t1, t2))
+		{
+			//it's a hit
+			if(intersection!= NULL)
+			{
+				*intersection = hitPos;
+			}
+			return true;
+		}
+		
+		//nada
+		return false;
 	}
 }

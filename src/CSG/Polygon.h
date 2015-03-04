@@ -77,6 +77,37 @@ namespace ofxCSG
 			}
 		}
 		
+		bool intersectRay( ofVec3f rayOrigin, ofVec3f rayDir, ofVec3f* intersection = NULL )
+		{
+			for(auto& t: triangles)
+			{
+				if( t.intersectRay( rayOrigin, rayDir, intersection ) )
+				{
+					return true;
+				}
+			}
+			
+			return false;
+		}
+		
+		void classify( vector<Polygon> polygons )
+		{
+			for(auto& t: triangles)
+			{
+				ofVec3f rayOrigin = t.getCenter();
+				int intersectionCount = 0;
+				for( auto& p: polygons )
+				{
+					if( p.intersectRay( rayOrigin, ofVec3f(0,1,0) ) )
+					{
+						intersectionCount++;
+					}
+				}
+				
+				t.classification = intersectionCount % 2 ? ofxCSG::BACK : ofxCSG::FRONT;
+			}
+		}
+		
 		void draw()
 		{
 			for(auto& t: triangles)
