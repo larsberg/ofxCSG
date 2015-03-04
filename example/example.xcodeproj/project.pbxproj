@@ -48,7 +48,6 @@
 		25EB393F641E2D96B4947177 /* Utils.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = Utils.h; path = ../../../addons/ofxCSG/src/CSG/Utils.h; sourceTree = SOURCE_ROOT; };
 		3E0659F4CB5AFB45E27B5700 /* ofxObjLoader.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxObjLoader.h; path = ../../../addons/ofxObjLoader/src/ofxObjLoader.h; sourceTree = SOURCE_ROOT; };
 		4091601133A9DA1ED8505149 /* ofxCSG.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxCSG.h; path = ../../../addons/ofxCSG/src/ofxCSG.h; sourceTree = SOURCE_ROOT; };
-		50F3470F1AA660BE00E4B69E /* Vertex.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Vertex.h; path = ../src/CSG/Vertex.h; sourceTree = "<group>"; };
 		50F347101AA6612300E4B69E /* Triangle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Triangle.h; path = ../src/CSG/Triangle.h; sourceTree = "<group>"; };
 		50F347111AA6621B00E4B69E /* Polygon.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Polygon.h; path = ../src/CSG/Polygon.h; sourceTree = "<group>"; };
 		50F347121AA6637F00E4B69E /* LineSegment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = LineSegment.h; path = ../src/CSG/LineSegment.h; sourceTree = "<group>"; };
@@ -98,7 +97,6 @@
 			isa = PBXGroup;
 			children = (
 				25EB393F641E2D96B4947177 /* Utils.h */,
-				50F3470F1AA660BE00E4B69E /* Vertex.h */,
 				50F347101AA6612300E4B69E /* Triangle.h */,
 				50F347111AA6621B00E4B69E /* Polygon.h */,
 				50F347121AA6637F00E4B69E /* LineSegment.h */,

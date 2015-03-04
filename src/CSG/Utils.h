@@ -74,12 +74,18 @@ namespace ofxCSG
 		//	return -( doubleDot( planeNormal, point - planePos ) );
 	}
 	
-	static Classification classifyPointWithPlane( ofVec3f point, ofVec3f planePos, ofVec3f planeNormal )
+	static Classification classifyPointWithPlane( ofVec3f point, ofVec3f planeNormal, float w )
+	{
+		float t = planeNormal.dot( point ) - w;
+		return ( t < NEG_EPSILON ) ? BACK : (t > EPSILON) ? FRONT : SPANNING;
+	}
+	
+	static Classification classifyPointWithPlane( ofVec3f point, ofVec3f planePos, ofVec3f planeNormal)
 	{
 		auto d = distanceToPlaneSigned( point, planePos, planeNormal );
 		
-		if( d >= EPSILON )	return FRONT;
-		else if( d <= NEG_EPSILON )	return BACK;
+		if( d > EPSILON )	return BACK;
+		else if( d < NEG_EPSILON )	return FRONT;
 		
 		return SPANNING;
 	}
@@ -186,7 +192,6 @@ namespace ofxCSG
 		
 		if(l0 == l1)
 		{
-			cout << "l0 == l1" << endl;
 			return 0;
 		}
 		
@@ -208,6 +213,23 @@ namespace ofxCSG
 		if( isPointInLineSegment(a0, a1, p) )
 		{
 			*intersection = p;
+			return true;
+		}
+		
+		return false;
+	}
+	
+	static bool splitLineSegmentWithPlane( ofVec3f l0, ofVec3f l1, ofVec3f planeNormal, float w, ofVec3f* intersection)
+	{
+		auto c0 = classifyPointWithPlane( l0, planeNormal, w);
+		auto c1 = classifyPointWithPlane( l1, planeNormal, w);
+		
+		if( c0 != c1 )
+		{
+			float k = (w - planeNormal.dot(l0)) / planeNormal.dot( l1 - l0 );
+			
+			*intersection = lerp( l0, l1, CLAMP(k, 0, 1) ); // the clamp fixed some errors where k > 1
+			
 			return true;
 		}
 		

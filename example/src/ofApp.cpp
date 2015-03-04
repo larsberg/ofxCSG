@@ -1,8 +1,29 @@
 #include "ofApp.h"
 
 //--------------------------------------------------------------
-void ofApp::setup(){
-
+void ofApp::setup()
+{
+	ofxObjLoader::load("sphere0.obj", m0); // box0
+	ofxObjLoader::load("torus1.obj", m1); // box1
+//	ofxObjLoader::load("box0.obj", m0);
+//	ofxObjLoader::load("box1.obj", m1);
+	
+	// get our polygons
+	polygons0 = ofxCSG::meshToPolygons( m0 );
+	polygons1 = ofxCSG::meshToPolygons( m1 );
+	
+	for(auto& p0: polygons0)
+	{
+		for(auto& p1: polygons1)
+		{
+			p0.split( p1 );
+		}
+	}
+	
+	//set the meshes from our poygons
+	ofxCSG::setMeshFromPolygons( m0, polygons0 );
+	ofxCSG::setMeshFromPolygons( m1, polygons1 );
+	
 }
 
 //--------------------------------------------------------------
@@ -11,51 +32,34 @@ void ofApp::update(){
 }
 
 //--------------------------------------------------------------
-void ofApp::draw(){
+void ofApp::draw()
+{
+	ofPushStyle();
+	ofEnableDepthTest();
+	
+	camera.begin();
+	
+	ofPushMatrix();
+	ofScale(10, 10, 10);
+	
+	for(auto& p: polygons0)
+	{
+		p.draw();
+	}
+	
+	ofSetLineWidth( 2 );
+	ofSetColor( 255, 0, 0 );
+	m0.drawWireframe();
+	m1.drawWireframe();
 
+	ofPopMatrix();
+	
+	camera.end();
+	
+	ofPopStyle();
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
 
 }

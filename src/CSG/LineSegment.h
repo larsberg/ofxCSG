@@ -65,10 +65,10 @@ namespace ofxCSG
 				swap(uP0, uP1);
 			}
 			
-			if(uP1 == uP0)
-			{
-				cout << "SHIT!" << p0 << ", " << p1 << endl << endl;
-			}
+//			if(uP1 == uP0)
+//			{
+//				cout << "SHIT!" << p0 << ", " << p1 << endl << endl;
+//			}
 			
 			a = uP0 > 0 ? p0 : a;
 			b = uP1 < 1 ? p1 : b;
