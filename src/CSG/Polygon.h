@@ -94,6 +94,8 @@ namespace ofxCSG
 		{
 			for(auto& t: triangles)
 			{
+				if(t.classification == BACK || t.classification == FRONT)	continue;
+				
 				ofVec3f rayOrigin = t.getCenter();
 				int intersectionCount = 0;
 				for( auto& p: polygons )

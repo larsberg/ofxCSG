@@ -110,20 +110,9 @@ namespace ofxCSG
 		
 		void draw()
 		{
-			if(classification == FRONT)
+			if(classification == BACK)
 			{
-				ofSetColor(0, 255, 255, 255);
-				ofDrawTriangle( a, b, c );
-			}
-			else if(classification == BACK)
-			{
-				ofSetColor(66, 255, 55, 255);
-				ofDrawTriangle( a, b, c );
-			}
-			else
-			{
-				ofSetColor( 255, 255 );
-				ofDrawTriangle( a, b, c );
+				return;
 			}
 			
 			ofSetColor( ofFloatColor(normal.x * .5 + .5, normal.y * .5 + .5, normal.z * .5 + .5) );
@@ -260,6 +249,11 @@ namespace ofxCSG
 			return triangles;
 		}
 		
+		bool doesOverlapWithCoplanarTriangles(Triangle& t)
+		{
+			
+		}
+		
 		vector<Triangle> split( Triangle& t )
 		{
 			vector<Triangle> triangles;
@@ -268,11 +262,13 @@ namespace ofxCSG
 			
 			if( c == SPANNING || c == COPLANAR )
 			{
-				//are they coplanar? if so, subtract or add the triangles
+				//are they coplanar?
 				auto nDot = normal.dot( t.normal );
-				if( abs( nDot ) >= 1.)//do we need EPSILON here?
+				if( abs( nDot ) >= 1. )//do we need EPSILON here?
 				{
-					return splitWithCoplanarTriangle( t, nDot);
+					cout << "splitWithCoplanarTriangle" << endl;
+					//subtract or add the triangles from each other and return the new triangles
+					return splitWithCoplanarTriangle( t, nDot );
 				}
 				
 				//otherwise check if the other triangle spans this one
@@ -297,28 +293,18 @@ namespace ofxCSG
 							subd = tri.insert( trimedOverlap.b );
 						}
 						
-						//if(subd.size() > 1)
-						//{
-						//	for(auto& st: subd)
-						//	{
-						//		c = st.getClassification( t.normal, t.w );
-						//		if( c == FRONT || c == BACK )
-						//		{
-						//			st.classification = c;
-						//		}
-						//	}
-						//}
-						
 						triangles.insert( triangles.end(), subd.begin(), subd.end() );
 					}
 				}
 				else
 				{
+					//no intersection
 					triangles.push_back( *this );
 				}
 			}
 			else
 			{
+				//no intersection
 				triangles.push_back( *this );
 			}
 			

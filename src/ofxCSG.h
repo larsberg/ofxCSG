@@ -19,9 +19,12 @@ namespace ofxCSG
 		{
 			for(auto& t: p.triangles)
 			{
-				m.addVertex( t.a );
-				m.addVertex( t.b );
-				m.addVertex( t.c );
+				if(t.classification == FRONT)
+				{
+					m.addVertex( t.a );
+					m.addVertex( t.b );
+					m.addVertex( t.c );
+				}
 			}
 		}
 	}

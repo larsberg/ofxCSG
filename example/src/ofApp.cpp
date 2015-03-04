@@ -3,14 +3,20 @@
 //--------------------------------------------------------------
 void ofApp::setup()
 {
-	ofxObjLoader::load("sphere0.obj", m0); // box0
-	ofxObjLoader::load("torus1.obj", m1); // box1
+//	ofxObjLoader::load("sphere0.obj", m0); // box0
+//	ofxObjLoader::load("torus1.obj", m1); // box1
+	
+	ofxObjLoader::load("coplanar1.obj", m0);
+	ofxObjLoader::load("coplanar0.obj", m1);
+	
 //	ofxObjLoader::load( "box0.obj", m0 );
 //	ofxObjLoader::load( "box1.obj", m1 );
 	
 	// get our polygons
 	polygons0 = ofxCSG::meshToPolygons( m0 );
 	polygons1 = ofxCSG::meshToPolygons( m1 );
+	
+	
 	
 	//split
 	for(auto& p0: polygons0)
@@ -54,8 +60,8 @@ void ofApp::draw()
 		p.draw();
 	}
 	
+	ofSetColor(255, 100);
 	ofSetLineWidth( 2 );
-	ofSetColor( 255, 0, 0 );
 	m0.drawWireframe();
 	m1.drawWireframe();
 

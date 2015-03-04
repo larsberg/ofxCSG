@@ -266,7 +266,7 @@ namespace ofxCSG
 	{
 		if( fabs( distanceToPlaneSigned( p, a, normal ) ) > EPSILON )	return false;
 		
-		float u, v, w, epsilon = NEG_EPSILON; // EPSILON; // 0; //
+		float u, v, w, epsilon = NEG_EPSILON; // 0; // EPSILON; // 0; //
 		
 		if( getBaryCentricCoords( p, a, b, c, u, v, w ) )
 		{
