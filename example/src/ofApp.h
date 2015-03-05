@@ -20,4 +20,9 @@ class ofApp : public ofBaseApp{
 	ofMesh m0, m1;
 	
 	vector<ofxCSG::Polygon> polygons0, polygons1;
+	
+	ofMesh p0, p1;
+	
+	vector<ofPolyline> polylines;
+	ofMesh pMesh;
 };

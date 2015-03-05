@@ -11,10 +11,9 @@
 
 namespace ofxCSG
 {
-	static void setMeshFromPolygons(ofMesh& m, vector<ofxCSG::Polygon>& polygons)
+	
+	static void addPolygonsToMesh(ofMesh& m, vector<ofxCSG::Polygon>& polygons)
 	{
-		m.clear();
-		
 		for(auto& p: polygons)
 		{
 			for(auto& t: p.triangles)
@@ -53,5 +52,89 @@ namespace ofxCSG
 		
 		
 		return polygons;
+	}
+	
+	static vector<ofPolyline> polygonsToPolylines( vector<Polygon>& polygons )
+	{
+		vector<ofPolyline> polylines;
+		for(auto& p: polygons)
+		{
+			auto pl = p.toPolyline();
+			
+			polylines.insert(polylines.end(), pl.begin(), pl.end() );
+		}
+		
+		return polylines;
+	}
+	
+	
+	static void meshBoolean( ofMesh& a, ofMesh& b, ofMesh& m, bool flipA, bool flipB)
+	{
+		
+		// get our polygons
+		auto polygonsA = meshToPolygons( a );
+		auto polygonsB = meshToPolygons( b );
+		
+		auto orig_polygonsA = polygonsA;
+		auto orig_polygonsB = polygonsB;
+		
+		//split the polygons with eachother
+		for(auto& p: polygonsA)
+		{
+			for( auto& p1: orig_polygonsB )
+			{
+				p.split( p1 );
+			}
+		}
+		
+		for(auto& p: polygonsB)
+		{
+			for( auto& p1: orig_polygonsA )
+			{
+				p.split( p1 );
+			}
+		}
+		
+		//classy the triangles
+		ofVec3f rayDir(0,1,0);
+		for(auto& p: polygonsA)
+		{
+			p.classify( orig_polygonsB );
+		}
+		
+		for(auto& p: polygonsB)
+		{
+			p.classify( orig_polygonsA );
+		}
+		
+		if(flipA)
+		{
+			for(auto& p: polygonsA)	p.flip();
+		}
+		
+		if(flipB)
+		{
+			for(auto& p: polygonsB)	p.flip();
+		}
+		
+		//add the polygons to out outMesh
+		m.clear();
+		addPolygonsToMesh( m, polygonsA );
+//		addPolygonsToMesh( m, polygonsB );
+	}
+	
+	static void meshUnion( ofMesh& a, ofMesh& b, ofMesh& outMesh )
+	{
+		meshBoolean( a, b, outMesh, false, false );
+	}
+	
+	static void meshIntersection( ofMesh& a, ofMesh& b, ofMesh& outMesh )
+	{
+		meshBoolean( a, b, outMesh, true, true );
+	}
+	
+	static void meshDifference( ofMesh& a, ofMesh& b, ofMesh& outMesh )
+	{
+		meshBoolean( a, b, outMesh, false, true );
 	}
 }

@@ -88,7 +88,35 @@ namespace ofxCSG
 			
 			ofVec3f hitPos = rayDir * distance + rayOrigin;
 			
-			if( isPointInTriangle( hitPos, a, b, c ) )
+			if( isPointInTriangle( hitPos, a, b, c, normal ) )
+			{
+				//it's a hit
+				if(intersection!= NULL)
+				{
+					*intersection = hitPos;
+				}
+				return true;
+			}
+			
+			//nada
+			return false;
+		}
+		//derived from Akira-Hayasaka's ofxRayTriangleIntersection
+		//	https://github.com/Akira-Hayasaka/ofxRayTriangleIntersection/blob/master/src/ofxRayTriangleIntersection.h
+		//	assume ray direction is normalized
+		bool intersectRay( ofVec3f rayOrigin, ofVec3f rayDir, float epsilon, ofVec3f* intersection = NULL )
+		{
+			float vn = rayDir.dot(normal);
+			
+			ofVec3f diff = rayOrigin - a;
+			float xpn = diff.dot( normal );
+			float distance = -xpn / vn;
+			
+			if (distance < 0) return false; // behind ray origin. fail
+			
+			ofVec3f hitPos = rayDir * distance + rayOrigin;
+			
+			if( isPointInTriangle( hitPos, a, b, c, normal, epsilon ) )
 			{
 				//it's a hit
 				if(intersection!= NULL)
@@ -140,6 +168,7 @@ namespace ofxCSG
 		{
 			classification = getClassification( planeNormal, planeW );
 		}
+		
 		
 		vector<Triangle> splitWithCoplanarTriangle(Triangle& t, float normalDotNormal)
 		{
@@ -249,10 +278,48 @@ namespace ofxCSG
 			return triangles;
 		}
 		
-		bool doesOverlapWithCoplanarTriangles(Triangle& t)
+		
+		bool coplanarWithTrianle(Triangle& t)
 		{
+			auto nDot = normal.dot( t.normal );
 			
+			if( abs(nDot) >= 1. && abs( distanceToPlane( a, t.a, t.normal ) ) < EPSILON )
+			{
+				return true;
+			}
+			
+			return false;
 		}
+		
+		bool doPlanarTrianglesOverlap(Triangle& t)
+		{
+			for(int i=0; i<3; i++)
+			{
+				if( isPointInTriangle( (*this)[i], t.a, t.b, t.c) || isPointInTriangle( t[i], a, b, c) )	return true;
+			}
+			
+			return false;
+		}
+		
+//		vector<Triangle> coplanarSplit(Triangle& t)
+//		{
+//			vector<Triangle> triangles;
+//			//are they coplanar?
+//			if( coplanarWithTrianle(t) )//do we need EPSILON here?
+//			{
+//				if( doPlanarTrianglesOverlap(t) )
+//				{
+//					auto nDot = normal.dot( t.normal );
+//					
+//					//subtract or add the triangles from each other and return the new triangles
+//					return splitWithCoplanarTriangle( t, nDot );
+//				}
+//			}
+//			
+//			//no intersection
+//			triangles.push_back( *this );
+//			return triangles;
+//		}
 		
 		vector<Triangle> split( Triangle& t )
 		{
@@ -262,19 +329,10 @@ namespace ofxCSG
 			
 			if( c == SPANNING || c == COPLANAR )
 			{
-				//are they coplanar?
-				auto nDot = normal.dot( t.normal );
-				if( abs( nDot ) >= 1. )//do we need EPSILON here?
-				{
-					cout << "splitWithCoplanarTriangle" << endl;
-					//subtract or add the triangles from each other and return the new triangles
-					return splitWithCoplanarTriangle( t, nDot );
-				}
-				
 				//otherwise check if the other triangle spans this one
 				c = t.getClassification(normal, w);
 				
-				//if they both span they might intersect. so we'll find the line segment where they overlap
+				//if they both span then they might intersect. so we'll find the line segment where they overlap
 				//	and split it with that segment
 				LineSegment overlap;
 				if( c == SPANNING && getIntersection( t, &overlap ) )
@@ -282,6 +340,8 @@ namespace ofxCSG
 					//they intersect, let's split using the overlap segment
 					auto firstPass = insert( overlap.a );
 					
+					//	we need to trim the line segment for each triangle because we're inserting the end points
+					//	into each triangle to subdivide.
 					for(auto& tri: firstPass)
 					{
 						auto trimedOverlap = overlap;

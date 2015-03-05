@@ -14,7 +14,7 @@ namespace ofxCSG
 	//STATIC VARS
 	static float EPSILON = 1e-5;
 	static float ONE_PLUS_EPSILON = EPSILON + 1;
-	static float NEG_EPSILON = -1e-5;
+	static float NEG_EPSILON = -EPSILON;
 	
 	enum Classification
 	{
@@ -266,7 +266,25 @@ namespace ofxCSG
 	{
 		if( fabs( distanceToPlaneSigned( p, a, normal ) ) > EPSILON )	return false;
 		
-		float u, v, w, epsilon = NEG_EPSILON; // 0; // EPSILON; // 0; //
+		float u, v, w, epsilon = NEG_EPSILON; // 0; // EPSILON; //
+		
+		if( getBaryCentricCoords( p, a, b, c, u, v, w ) )
+		{
+			return u > epsilon && v > epsilon && w > epsilon;
+		}
+		
+		return false;
+	}
+	
+	static bool isPointOnPlane( ofVec3f p, ofVec3f planeNormal, float w)
+	{
+		float t = planeNormal.dot(p) - w;
+		return abs(t) > EPSILON;
+	}
+	
+	static bool isPointInTriangle(ofVec3f p, ofVec3f a, ofVec3f b, ofVec3f c, ofVec3f normal, float epsilon )
+	{
+		float u, v, w;
 		
 		if( getBaryCentricCoords( p, a, b, c, u, v, w ) )
 		{
