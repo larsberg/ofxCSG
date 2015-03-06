@@ -11,6 +11,7 @@
 
 namespace ofxCSG
 {
+	
 	class Polygon
 	{
 	public:
@@ -46,6 +47,16 @@ namespace ofxCSG
 			triangles.push_back( Triangle( a, b, c ) );
 		}
 		
+		ofVec3f getNormal()
+		{
+			return triangles[0].normal;
+		}
+		
+		float getW()
+		{
+			return triangles[0].w;
+		}
+		
 		void clear()
 		{
 			triangles.clear();
@@ -57,10 +68,9 @@ namespace ofxCSG
 		}
 		
 		
-		vector<ofPolyline> toPolyline()
+		vector<ofPolyline> toPolylines()
 		{
 			vector<ofPolyline> polylines;
-			ofTessellator tess;
 			
 			for(auto& t: triangles)
 			{
@@ -74,15 +84,54 @@ namespace ofxCSG
 				polylines.push_back( p );
 			}
 			
-			vector<ofPolyline> dstpoly = polylines;
-//			tess.tessellateToPolylines( polylines, OF_POLY_WINDING_POSITIVE, dstpoly );
+			return polylines;
+		}
+		
+		//campare two RampItems using their u values
+		static bool compareOfVec3f ( ofVec3f v0, ofVec3f v1)
+		{
+			return v0.x > v1.x || v0.y > v1.y || v0.z > v1.z;
+		}
+		
+		vector<ofVec3f> getVertices()
+		{
+			vector<ofVec3f> v;
+			for(auto& t: triangles)
+			{
+				v.push_back( t.a );
+				v.push_back( t.b );
+				v.push_back( t.c );
+			}
 			
-			return dstpoly;
+			cout << "v.size(): " << v.size() << " -> ";
+			sort( v.begin(), v.end(), compareOfVec3f );
+			unique( v.begin(), v.end() );
+			cout << v.size() << endl;;
+		
+			return v;
 		}
 		
 		void coplanarSplit( Polygon& p )
 		{
-			return triangles;
+			vector<Triangle> splitTriangles;
+			for(auto& pt: p.triangles)
+			{
+				vector<Triangle> subd;
+				for(auto& t: triangles)
+				{
+					if( t.doCoplanarTrianglesOverlap( pt ))
+					{
+						auto result = t.splitWithCoplanarTriangle( pt );
+						subd.insert( subd.end(), result.begin(), result.end() );
+					}else{
+						subd.push_back( t );
+					}
+				}
+				
+				splitTriangles.insert( splitTriangles.end(), subd.begin(), subd.end() );
+			}
+			
+			triangles = splitTriangles;
 		}
 		
 		void split( Triangle& t )
@@ -99,28 +148,41 @@ namespace ofxCSG
 		
 		void split( Polygon& p )
 		{
+			
+//			//otherwise split the triangles individually
+//			for( auto& t: p.triangles )
+//			{
+//				split( t );
+//			}
+			
 			//TODO: the coplanar splitting is slow! find someone who's smarter and ask them how to do this
 			//
 			//if they're coplanar split them differnetly
 			float nDot = triangles[0].normal.dot( p.triangles[0].normal );
-			if( abs( nDot ) >= 1 || abs( triangles[0].normal.x ) >= 1 )
+			if( abs( nDot ) >= 1 )
 			{
-				cout << "nDot: " << nDot << endl;
-//				if(abs( distanceToPlaneSigned(p.triangles[0].a, triangles[0].a, triangles[0].normal ) ) <= EPSILON)
-				if( isPointOnPlane( p.triangles[0].a, triangles[0].normal, triangles[0].w) )
+//				if( distanceToPlane( p.triangles[0].a, triangles[0].a, getNormal() ) <= EPSILON )
+//				if( isPointOnPlane( p.triangles[0].a, getNormal(), getW() ) )
+				if( abs( distanceToPlaneSigned( p.triangles[0].a, triangles[0].a, triangles[0].normal ) ) <= EPSILON )
 				{
-//					coplanarSplit( p );
-//					vector<Triangle> splitTriangles;
-//					for(auto& t: triangles)
-//					{
-//						for(auto& pt: p.triangles)
-//						{
-//							auto subd = t.coplanarSplit( pt );
-//							splitTriangles.insert( splitTriangles.end(), subd.begin(), subd.end() );
-//						}
-//					}
+					
+					
+//					auto p1 = toPolylines();
+//					auto p2 = p.toPolylines();
 //					
-//					triangles = splitTriangles;
+//					ofTessellator tess;
+//					tess.tessellateToPolylines( p1, OF_POLY_WINDING_POSITIVE, p1 );
+//					
+////					p1.insert( p1.end(), p2.begin(), p2.end() );
+//					
+//					ofPolyWindingMode pMode = OF_POLY_WINDING_POSITIVE;
+//					
+//					ofMesh m;
+//					tess.tessellateToMesh( p1, pMode, m );
+//					
+//					triangles = meshToTriangles( m );
+//					cout << "coplanarSplit:: triangles.size(): " << triangles.size() << endl;
+					
 				}
 			}
 			else
@@ -176,11 +238,11 @@ namespace ofxCSG
 			}
 		}
 		
-		void draw()
+		void draw(bool useNormalForColor = true)
 		{
 			for(auto& t: triangles)
 			{
-				t.draw();
+				t.draw(useNormalForColor);
 			}
 		}
 		

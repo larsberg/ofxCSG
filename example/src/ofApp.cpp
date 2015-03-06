@@ -24,15 +24,11 @@ void ofApp::setup()
 	
 	auto p1 = ofxCSG::polygonsToPolylines( polygons0 );
 	auto p2 = ofxCSG::polygonsToPolylines( polygons1 );
-
-	p2.insert( p2.end(), p1.begin(), p1.end() );
-	
 	
 	ofTessellator tess;
-	auto p3 = p2;
-	tess.tessellateToPolylines( p2, OF_POLY_WINDING_ABS_GEQ_TWO, p3 );
+	tess.tessellateToPolylines( p1, OF_POLY_WINDING_POSITIVE, p1 );
 	
-	p1.insert( p1.end(), p3.begin(), p3.end() );
+	p1.insert( p1.end(), p2.begin(), p2.end() );
 	
 	//OF_POLY_WINDING_ABS_GEQ_TWO	==	trim to inner shape
 	//OF_POLY_WINDING_ODD			==	cut out inner shape
@@ -40,10 +36,11 @@ void ofApp::setup()
 	//OF_POLY_WINDING_NONZERO		==	merge outlines
 	//OF_POLY_WINDING_NEGATIVE		==	nothing...
 	
-	ofPolyWindingMode pMode = OF_POLY_WINDING_ODD;
+	ofPolyWindingMode pMode = OF_POLY_WINDING_POSITIVE;
 	
 	tess.tessellateToPolylines( p1, pMode, polylines );
 	tess.tessellateToMesh( p1, pMode, pMesh );
+	
 }
 
 //--------------------------------------------------------------
@@ -54,8 +51,11 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw()
 {
+	ofBackground(0,0,0);
 	ofPushStyle();
 	ofDisableDepthTest();
+	
+	ofSetLineWidth( 1 );
 	
 	camera.begin();
 	
@@ -64,10 +64,14 @@ void ofApp::draw()
 	
 	ofSetColor(255, 45);
 	m0.draw();
+	ofSetColor(255);
 	m0.drawWireframe();
 	
 //	p0.drawWireframe();
 //	p1.drawWireframe();
+	
+	ofSetColor(255, 100);
+	pMesh.drawWireframe();
 	
 	ofSetColor(255, 0, 0);
 	for(auto& p: polylines)
@@ -75,8 +79,6 @@ void ofApp::draw()
 		p.draw();
 	}
 	
-	ofSetColor(255, 100);
-	pMesh.draw();
 	
 //	for(auto& p: polygons0)
 //	{

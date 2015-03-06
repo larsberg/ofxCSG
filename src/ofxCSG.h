@@ -59,7 +59,7 @@ namespace ofxCSG
 		vector<ofPolyline> polylines;
 		for(auto& p: polygons)
 		{
-			auto pl = p.toPolyline();
+			auto pl = p.toPolylines();
 			
 			polylines.insert(polylines.end(), pl.begin(), pl.end() );
 		}

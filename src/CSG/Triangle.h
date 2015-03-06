@@ -136,15 +136,24 @@ namespace ofxCSG
 			return (a + b + c) / 3.;
 		}
 		
-		void draw()
+		void draw(bool useNormalForColor = true)
 		{
 			if(classification == BACK)
 			{
 				return;
 			}
 			
-			ofSetColor( ofFloatColor(normal.x * .5 + .5, normal.y * .5 + .5, normal.z * .5 + .5) );
+			if(useNormalForColor)	ofSetColor( ofFloatColor(normal.x * .5 + .5, normal.y * .5 + .5, normal.z * .5 + .5) );
 			ofDrawTriangle( a, b, c );
+		}
+		
+		ofPolyline toPolyline()
+		{
+			ofPolyline p;
+			p.addVertices( getPtr(), 3);
+			p.setClosed(true);
+			
+			return p;
 		}
 		
 		Classification getClassification( ofVec3f planeNormal, float planeW )
@@ -169,41 +178,46 @@ namespace ofxCSG
 			classification = getClassification( planeNormal, planeW );
 		}
 		
-		
-		vector<Triangle> splitWithCoplanarTriangle(Triangle& t, float normalDotNormal)
+		vector<LineSegment> getEdges()
 		{
-			vector<Triangle> triangles;
+			vector<LineSegment> edges(3);
 			
-			//then lets subtract one form the other
-			//
-			//ofTessellator seemed like the easiest solution here... we should probably go a little lower level though
-			vector<ofPolyline> polylines(2);
+			edges[0].set(a, b);
+			edges[1].set(b, c);
+			edges[2].set(c, a);
 			
-			polylines[0].addVertex( a );
-			polylines[0].addVertex( b );
-			polylines[0].addVertex( c );
+			return edges;
+		}
+		
+		
+		vector<ofVec3f> getCoplanarTriangleIntersections(Triangle& t)
+		{
+			//get the points where the edges
+			vector<ofVec3f> intersectionPoints;
+			ofVec3f intersection;
+			auto ea = getEdges();
+			auto eb = t.getEdges();
 			
-			polylines[1].addVertex( t.a );
-			polylines[1].addVertex( t.b );
-			polylines[1].addVertex( t.c );
-			
-			ofTessellator tess;
-			ofMesh m;
-			
-			//if they are facing opposite directions we'll cut out the wholes
-			ofPolyWindingMode windMode = normalDotNormal > 0 ? OF_POLY_WINDING_POSITIVE : OF_POLY_WINDING_ODD;
-			
-			tess.tessellateToMesh( polylines, windMode, m);
-			
-			auto v = m.getVertices();
-			auto indices = m.getIndices();
-			
-			for(int i=0; i<indices.size(); i+=3)
+			for(auto& edgeA: ea)
 			{
-				triangles.push_back( Triangle(v[indices[i]], v[indices[i+1]], v[indices[i+2]] ) );
+				for(auto& edgeB: eb)
+				{
+					if( intersectLineSegments( edgeA.a, edgeA.b, edgeB.a, edgeB.b, &intersection ) )
+					{
+						intersectionPoints.push_back( intersection );
+					}
+				}
 			}
 			
-			return triangles;
+			for(int i=0; i<3; i++)
+			{
+				if( isPointInTriangle( t[i], a, b, c, normal, NEG_EPSILON))
+				{
+					intersectionPoints.push_back( t[i] );
+				}
+			}
+			
+			return intersectionPoints;
 		}
 		
 		vector<ofVec3f> intersectWithPlane( ofVec3f planeNormal, float planeW )
@@ -291,7 +305,7 @@ namespace ofxCSG
 			return false;
 		}
 		
-		bool doPlanarTrianglesOverlap(Triangle& t)
+		bool doCoplanarTrianglesOverlap(Triangle& t)
 		{
 			for(int i=0; i<3; i++)
 			{
@@ -320,6 +334,92 @@ namespace ofxCSG
 //			triangles.push_back( *this );
 //			return triangles;
 //		}
+
+		vector<Triangle> splitWithCoplanarSegment(ofVec3f a, ofVec3f b)
+		{
+			return splitWithCoplanarSegment( LineSegment(a, b) );
+		}
+		
+		vector<Triangle> splitWithCoplanarSegment(LineSegment segment)
+		{
+			vector<Triangle> triangles;
+			
+			//they intersect, let's split using the overlap segment
+			auto firstPass = insert( segment.a );
+			
+			//	we need to trim the line segment for each triangle because we're inserting the end points
+			//	into each triangle to subdivide.
+			for(auto& tri: firstPass)
+			{
+				auto trimedSegment = segment;
+				trimedSegment.trimToTriangle( tri.a, tri.b, tri.c );
+				
+				auto subd = tri.insert( trimedSegment.b );
+				if(subd.size() == 1)
+				{
+					subd = tri.insert( trimedSegment.a );
+				}
+				
+				triangles.insert( triangles.end(), subd.begin(), subd.end() );
+			}
+			
+			if(!triangles.size())
+			{
+				triangles.push_back( *this );
+			}
+			
+			return triangles;
+		}
+		
+		
+		vector<Triangle> splitWithCoplanarTriangle( Triangle& t )
+		{
+			vector<Triangle> triangles;
+			triangles.push_back( *this );
+			
+//			auto edges = t.getEdges();
+//			
+//			for(auto& e: edges)
+//			{
+//				vector<Triangle> subd;
+//				for(auto& tri: triangles)
+//				{
+//					auto edge = e;
+//					if( edge.trimToTriangle( tri.a, tri.b, tri.c ) )
+//					{
+//						auto result = tri.splitWithCoplanarSegment( edge );
+//						subd.insert( subd.end(), result.begin(), result.end() );
+//					}else{
+//						subd.push_back( tri );
+//					}
+//				}
+//				
+//				triangles = subd;
+//			}
+			
+			
+			return triangles;
+			
+//			vector<Triangle> triangles;
+//			
+//			for(int i=0, j=1; i<3; i++, j++)
+//			{
+//				LineSegment edge( t[i], t[j%3] );
+//				
+//				if( edge.trimToTriangle( a, b, c ) )
+//				{
+//					auto result = splitWithCoplanarSegment( edge );
+//					triangles.insert( triangles.end(), result.begin(), result.end() );
+//				}
+//			}
+//			
+//			if( triangles.size() == 0 )
+//			{
+//				triangles.push_back( *this );
+//			}
+//			
+//			return triangles;
+		}
 		
 		vector<Triangle> split( Triangle& t )
 		{
@@ -337,24 +437,7 @@ namespace ofxCSG
 				LineSegment overlap;
 				if( c == SPANNING && getIntersection( t, &overlap ) )
 				{
-					//they intersect, let's split using the overlap segment
-					auto firstPass = insert( overlap.a );
-					
-					//	we need to trim the line segment for each triangle because we're inserting the end points
-					//	into each triangle to subdivide.
-					for(auto& tri: firstPass)
-					{
-						auto trimedOverlap = overlap;
-						trimedOverlap.trimToTriangle( tri.a, tri.b, tri.c );
-						
-						auto subd = tri.insert( trimedOverlap.a );
-						if(subd.size() == 1)
-						{
-							subd = tri.insert( trimedOverlap.b );
-						}
-						
-						triangles.insert( triangles.end(), subd.begin(), subd.end() );
-					}
+					return splitWithCoplanarSegment( overlap );
 				}
 				else
 				{
@@ -378,4 +461,31 @@ namespace ofxCSG
 		float w;
 		Classification classification;
 	};
+	
+	
+	//STATIC METHODS
+	static vector<Triangle> meshToTriangles(ofMesh& m)
+	{
+		vector<Triangle> triangles;
+		
+		auto indices = m.getIndices();
+		auto v = m.getVertices();
+		
+		if(indices.size())
+		{
+			for(int i=0; i<indices.size(); i+=3)
+			{
+				triangles.push_back( Triangle( v[ indices[i] ], v[ indices[i+1] ], v[ indices[i+2] ] ) );
+			}
+		}
+		else
+		{
+			for(int i=0; i<v.size(); i+=3)
+			{
+				triangles.push_back( Triangle( v[i], v[i+1], v[i+2] ) );
+			}
+		}
+		
+		return triangles;
+	}
 }

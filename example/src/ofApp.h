@@ -25,4 +25,8 @@ class ofApp : public ofBaseApp{
 	
 	vector<ofPolyline> polylines;
 	ofMesh pMesh;
+	
+	
+	ofxCSG::Polygon cp0, cp1;
+	vector<ofVec3f> intersectionPoints;
 };
