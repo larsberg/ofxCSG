@@ -111,29 +111,6 @@ namespace ofxCSG
 			return v;
 		}
 		
-		void coplanarSplit( Polygon& p )
-		{
-			vector<Triangle> splitTriangles;
-			for(auto& pt: p.triangles)
-			{
-				vector<Triangle> subd;
-				for(auto& t: triangles)
-				{
-					if( t.doCoplanarTrianglesOverlap( pt ))
-					{
-						auto result = t.splitWithCoplanarTriangle( pt );
-						subd.insert( subd.end(), result.begin(), result.end() );
-					}else{
-						subd.push_back( t );
-					}
-				}
-				
-				splitTriangles.insert( splitTriangles.end(), subd.begin(), subd.end() );
-			}
-			
-			triangles = splitTriangles;
-		}
-		
 		void split( Triangle& t )
 		{
 			vector<Triangle> splitTriangles;
@@ -149,36 +126,28 @@ namespace ofxCSG
 		void split( Polygon& p )
 		{
 			
-//			//otherwise split the triangles individually
-//			for( auto& t: p.triangles )
-//			{
-//				split( t );
-//			}
-			
 			//TODO: the coplanar splitting is slow! find someone who's smarter and ask them how to do this
 			//
 			//if they're coplanar split them differnetly
-			float nDot = triangles[0].normal.dot( p.triangles[0].normal );
-			if( abs( nDot ) >= 1 )
+			float nDot = getNormal().dot( p.getNormal() );
+			if( abs(nDot) <= 1 - EPSILON )
 			{
+				
 //				if( distanceToPlane( p.triangles[0].a, triangles[0].a, getNormal() ) <= EPSILON )
-//				if( isPointOnPlane( p.triangles[0].a, getNormal(), getW() ) )
-				if( abs( distanceToPlaneSigned( p.triangles[0].a, triangles[0].a, triangles[0].normal ) ) <= EPSILON )
+				//if( abs( distanceToPlaneSigned( p.triangles[0].a, triangles[0].a, triangles[0].normal ) ) <= EPSILON )
+				if( isPointOnPlane( p.triangles[0].a, getNormal(), getW(), .0001 ) )
 				{
-					
-					
-//					auto p1 = toPolylines();
-//					auto p2 = p.toPolylines();
+					cout << "isPointOnPlane" << endl;
+//					auto p0 = toPolylines();
+//					auto p1 = p.toPolylines();
 //					
 //					ofTessellator tess;
-//					tess.tessellateToPolylines( p1, OF_POLY_WINDING_POSITIVE, p1 );
+//					tess.tessellateToPolylines( p0, OF_POLY_WINDING_POSITIVE, p0 );
 //					
-////					p1.insert( p1.end(), p2.begin(), p2.end() );
-//					
-//					ofPolyWindingMode pMode = OF_POLY_WINDING_POSITIVE;
+////					p1.insert( p0.end(), p1.begin(), p1.end() );
 //					
 //					ofMesh m;
-//					tess.tessellateToMesh( p1, pMode, m );
+//					tess.tessellateToMesh( p0, OF_POLY_WINDING_POSITIVE, m );
 //					
 //					triangles = meshToTriangles( m );
 //					cout << "coplanarSplit:: triangles.size(): " << triangles.size() << endl;
@@ -222,7 +191,7 @@ namespace ofxCSG
 				if(t.classification == BACK || t.classification == FRONT)	continue;
 				
 				ofVec3f rayOrigin = t.getCenter();
-				ofVec3f rayDir = ofVec3f(ofRandomf(), ofRandomf(), ofRandomf()).normalize(); // ofVec3f(0,1,0);
+				ofVec3f rayDir = getNormal();
 				
 				int intersectionCount = 0;
 				

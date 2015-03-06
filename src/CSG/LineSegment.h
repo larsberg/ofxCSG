@@ -52,7 +52,7 @@ namespace ofxCSG
 		{
 			if(!isPointInLineSegment( a, b, p0 ) && !isPointInLineSegment( a, b, p1 ))
 			{
-				//cout << "!isPointInLineSegment( a, b, p0 ) && !isPointInLineSegment( a, b, p1 )" << endl;
+//				cout << "!isPointInLineSegment( a, b, p0 ) && !isPointInLineSegment( a, b, p1 )" << endl;
 				return false;
 			}
 			
@@ -65,10 +65,10 @@ namespace ofxCSG
 				swap(uP0, uP1);
 			}
 			
-//			if(uP1 == uP0)
-//			{
-//				cout << "SHIT!" << p0 << ", " << p1 << endl << endl;
-//			}
+			if(uP1 == uP0)
+			{
+				cout << "SHIT!" << p0 << ", " << p1 << endl << endl;
+			}
 			
 			a = uP0 > 0 ? p0 : a;
 			b = uP1 < 1 ? p1 : b;
@@ -82,13 +82,14 @@ namespace ofxCSG
 			//get the intersections
 			vector<ofVec3f> intersections;
 			ofVec3f intersection;
+			ofVec3f normal = normalFromPoints( ta, tb, tc);
 			
 			//if the points are inside let's keep them
-			if( isPointInTriangle( a, ta, tb, tc ))
+			if( isPointInTriangle( a, ta, tb, tc, normal, NEG_EPSILON ))
 			{
 				intersections.push_back( a );
 			}
-			if( isPointInTriangle( b, ta, tb, tc ))
+			if( isPointInTriangle( b, ta, tb, tc, normal, NEG_EPSILON ))
 			{
 				intersections.push_back( b );
 			}

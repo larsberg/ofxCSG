@@ -190,36 +190,6 @@ namespace ofxCSG
 		}
 		
 		
-		vector<ofVec3f> getCoplanarTriangleIntersections(Triangle& t)
-		{
-			//get the points where the edges
-			vector<ofVec3f> intersectionPoints;
-			ofVec3f intersection;
-			auto ea = getEdges();
-			auto eb = t.getEdges();
-			
-			for(auto& edgeA: ea)
-			{
-				for(auto& edgeB: eb)
-				{
-					if( intersectLineSegments( edgeA.a, edgeA.b, edgeB.a, edgeB.b, &intersection ) )
-					{
-						intersectionPoints.push_back( intersection );
-					}
-				}
-			}
-			
-			for(int i=0; i<3; i++)
-			{
-				if( isPointInTriangle( t[i], a, b, c, normal, NEG_EPSILON))
-				{
-					intersectionPoints.push_back( t[i] );
-				}
-			}
-			
-			return intersectionPoints;
-		}
-		
 		vector<ofVec3f> intersectWithPlane( ofVec3f planeNormal, float planeW )
 		{
 			vector<ofVec3f> intersections;
@@ -243,8 +213,10 @@ namespace ofxCSG
 			auto i0 = intersectWithPlane( t.normal, t.w );
 			auto i1 = t.intersectWithPlane( normal, w );
 			
+			
 			if(i0.size() < 2 || i1.size() < 2)
 			{
+				cout << "i0.size() < 2 || i1.size() < 2" << endl;
 				return false;
 			}
 			
@@ -259,8 +231,10 @@ namespace ofxCSG
 				*overlap = l0;
 				return true;
 			}
+			//TODO: I don't think we need this second pass
 			else if( l1.subtract( l0 ) )
 			{
+				cout << "does this ever happen?" << endl;
 				*overlap = l1;
 				return true;
 			}
@@ -372,55 +346,6 @@ namespace ofxCSG
 		}
 		
 		
-		vector<Triangle> splitWithCoplanarTriangle( Triangle& t )
-		{
-			vector<Triangle> triangles;
-			triangles.push_back( *this );
-			
-//			auto edges = t.getEdges();
-//			
-//			for(auto& e: edges)
-//			{
-//				vector<Triangle> subd;
-//				for(auto& tri: triangles)
-//				{
-//					auto edge = e;
-//					if( edge.trimToTriangle( tri.a, tri.b, tri.c ) )
-//					{
-//						auto result = tri.splitWithCoplanarSegment( edge );
-//						subd.insert( subd.end(), result.begin(), result.end() );
-//					}else{
-//						subd.push_back( tri );
-//					}
-//				}
-//				
-//				triangles = subd;
-//			}
-			
-			
-			return triangles;
-			
-//			vector<Triangle> triangles;
-//			
-//			for(int i=0, j=1; i<3; i++, j++)
-//			{
-//				LineSegment edge( t[i], t[j%3] );
-//				
-//				if( edge.trimToTriangle( a, b, c ) )
-//				{
-//					auto result = splitWithCoplanarSegment( edge );
-//					triangles.insert( triangles.end(), result.begin(), result.end() );
-//				}
-//			}
-//			
-//			if( triangles.size() == 0 )
-//			{
-//				triangles.push_back( *this );
-//			}
-//			
-//			return triangles;
-		}
-		
 		vector<Triangle> split( Triangle& t )
 		{
 			vector<Triangle> triangles;
@@ -438,6 +363,8 @@ namespace ofxCSG
 				if( c == SPANNING && getIntersection( t, &overlap ) )
 				{
 					return splitWithCoplanarSegment( overlap );
+					
+					triangles.push_back( *this );
 				}
 				else
 				{

@@ -18,12 +18,12 @@ namespace ofxCSG
 		{
 			for(auto& t: p.triangles)
 			{
-				if(t.classification == FRONT)
-				{
+//				if(t.classification == FRONT)
+//				{
 					m.addVertex( t.a );
 					m.addVertex( t.b );
 					m.addVertex( t.c );
-				}
+//				}
 			}
 		}
 	}
@@ -79,19 +79,19 @@ namespace ofxCSG
 		auto orig_polygonsB = polygonsB;
 		
 		//split the polygons with eachother
-		for(auto& p: polygonsA)
+		for(auto& pa: polygonsA)
 		{
-			for( auto& p1: orig_polygonsB )
+			for( auto& pb: orig_polygonsB )
 			{
-				p.split( p1 );
+				pa.split( pb );
 			}
 		}
 		
-		for(auto& p: polygonsB)
+		for(auto& pb: polygonsB)
 		{
-			for( auto& p1: orig_polygonsA )
+			for( auto& pa: orig_polygonsA )
 			{
-				p.split( p1 );
+				pb.split( pa );
 			}
 		}
 		

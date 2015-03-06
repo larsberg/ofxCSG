@@ -276,10 +276,10 @@ namespace ofxCSG
 		return false;
 	}
 	
-	static bool isPointOnPlane( ofVec3f p, ofVec3f planeNormal, float w)
+	static bool isPointOnPlane( ofVec3f p, ofVec3f planeNormal, float w, float epsilon = EPSILON)
 	{
 		float t = planeNormal.dot(p) - w;
-		return abs(t) > EPSILON;
+		return abs(t) > epsilon;
 	}
 	
 	static bool isPointInTriangle(ofVec3f p, ofVec3f a, ofVec3f b, ofVec3f c, ofVec3f normal, float epsilon )
