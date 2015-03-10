@@ -11,6 +11,7 @@
 		5067B44B1AAF4823001557EA /* LineSegment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5067B44A1AAF4823001557EA /* LineSegment.cpp */; };
 		5067B44D1AAF491D001557EA /* Triangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5067B44C1AAF491D001557EA /* Triangle.cpp */; };
 		5067B44F1AAF4A79001557EA /* Polygon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5067B44E1AAF4A79001557EA /* Polygon.cpp */; };
+		5067B4521AAF532D001557EA /* BoundBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5067B4501AAF532D001557EA /* BoundBox.cpp */; };
 		79C90B9E38CF1E45B3321EA8 /* glm.c in Sources */ = {isa = PBXBuildFile; fileRef = 014D2F300EA95BC41CD6B5E3 /* glm.c */; };
 		E4328149138ABC9F0047C5CB /* openFrameworksDebug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E4328148138ABC890047C5CB /* openFrameworksDebug.a */; };
 		E4B69E200A3A1BDC003C02F2 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E4B69E1D0A3A1BDC003C02F2 /* main.cpp */; };
@@ -54,6 +55,8 @@
 		5067B44A1AAF4823001557EA /* LineSegment.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LineSegment.cpp; path = ../src/CSG/LineSegment.cpp; sourceTree = "<group>"; };
 		5067B44C1AAF491D001557EA /* Triangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Triangle.cpp; path = ../src/CSG/Triangle.cpp; sourceTree = "<group>"; };
 		5067B44E1AAF4A79001557EA /* Polygon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Polygon.cpp; path = ../src/CSG/Polygon.cpp; sourceTree = "<group>"; };
+		5067B4501AAF532D001557EA /* BoundBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BoundBox.cpp; path = ../src/CSG/BoundBox.cpp; sourceTree = "<group>"; };
+		5067B4511AAF532D001557EA /* BoundBox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BoundBox.h; path = ../src/CSG/BoundBox.h; sourceTree = "<group>"; };
 		50F347101AA6612300E4B69E /* Triangle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Triangle.h; path = ../src/CSG/Triangle.h; sourceTree = "<group>"; };
 		50F347111AA6621B00E4B69E /* Polygon.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Polygon.h; path = ../src/CSG/Polygon.h; sourceTree = "<group>"; };
 		50F347121AA6637F00E4B69E /* LineSegment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = LineSegment.h; path = ../src/CSG/LineSegment.h; sourceTree = "<group>"; };
@@ -109,6 +112,8 @@
 				5067B44E1AAF4A79001557EA /* Polygon.cpp */,
 				50F347121AA6637F00E4B69E /* LineSegment.h */,
 				5067B44A1AAF4823001557EA /* LineSegment.cpp */,
+				5067B4501AAF532D001557EA /* BoundBox.cpp */,
+				5067B4511AAF532D001557EA /* BoundBox.h */,
 			);
 			name = CSG;
 			sourceTree = "<group>";
@@ -288,6 +293,7 @@
 				E4B69E200A3A1BDC003C02F2 /* main.cpp in Sources */,
 				E4B69E210A3A1BDC003C02F2 /* ofApp.cpp in Sources */,
 				266D230E3D454A6B4FB7D2A9 /* ofxObjLoader.cpp in Sources */,
+				5067B4521AAF532D001557EA /* BoundBox.cpp in Sources */,
 				79C90B9E38CF1E45B3321EA8 /* glm.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <Vertex.h>
+#include <Utils.h>
 
 namespace ofxCSG
 {

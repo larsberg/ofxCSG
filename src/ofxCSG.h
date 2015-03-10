@@ -77,35 +77,79 @@ namespace ofxCSG
 		auto orig_polygonsA = polygonsA;
 		auto orig_polygonsB = polygonsB;
 		
+		auto startTime = ofGetElapsedTimeMillis();
+		
 		//split the polygons with eachother
-		for(auto& pa: polygonsA)
+		int rayIntersectionCount = 0;
+		for(int i=0; i<polygonsA.size(); i++)
 		{
-			for( auto& pb: orig_polygonsB )
+			auto& pa = polygonsA[i];
+			rayIntersectionCount = 0;
+			
+			for( auto& pb: polygonsB )
 			{
-				pa.split( pb );
+				if( pa.bb.intersects( pb.bb ))
+				{
+					pa.split( pb );
+					
+					pb.splitters.push_back( &orig_polygonsA[i] );
+				}
+				
+				
+				//classify FRONT||BACK where we can
+				if(pa.triangles.size() == 1)
+				{
+					pa.classifyRay( pb, pa.rayIntersectionCount );
+				}
+				
+				pb.classifyRay( orig_polygonsA[i], pb.rayIntersectionCount );
 			}
 		}
 		
 		for(auto& pb: polygonsB)
 		{
-			for( auto& pa: orig_polygonsA )
+			for( auto& pa: pb.splitters )
 			{
-				pb.split( pa );
+				if( pa->bb.intersects( pb.bb ))
+				{
+					pb.split( *pa );
+				}
 			}
+			
+			pb.wasSplit = pb.triangles.size() > 1;
 		}
 		
+		ofLogVerbose( "ofxCSG::meshBoolean", "split time: " + ofToString((ofGetElapsedTimeMillis() - startTime)) );
+		
 		//classy the triangles
+		startTime = ofGetElapsedTimeMillis();
 		ofVec3f rayDir(0,1,0);
 		for(auto& p: polygonsA)
 		{
-			p.classify( orig_polygonsB );
+			if(p.triangles.size() > 1)
+			{
+				p.classify( orig_polygonsB );
+			}
+			else
+			{
+				p.setClassification( p.rayIntersectionCount % 2 ? BACK : FRONT );
+			}
 		}
-		
+
 		for(auto& p: polygonsB)
 		{
-			p.classify( orig_polygonsA );
+			if(p.triangles.size() > 1)
+			{
+				p.classify( orig_polygonsA );
+			}
+			else
+			{
+				p.setClassification( p.rayIntersectionCount % 2 ? BACK : FRONT );
+			}
 		}
+		ofLogVerbose( "ofxCSG::meshBoolean", "classify time: " + ofToString((ofGetElapsedTimeMillis() - startTime)) );
 		
+		//flip em
 		if(flipA)
 		{
 			for(auto& p: polygonsA)	p.flip();
@@ -116,10 +160,12 @@ namespace ofxCSG
 			for(auto& p: polygonsB)	p.flip();
 		}
 		
+		startTime = ofGetElapsedTimeMillis();
 		//add the polygons to out outMesh
 		m.clear();
 		addPolygonsToMesh( m, polygonsA );
 		addPolygonsToMesh( m, polygonsB );
+		ofLogVerbose( "ofxCSG::meshBoolean", "create mesh time: " + ofToString((ofGetElapsedTimeMillis() - startTime)) );
 	}
 	
 	static void meshUnion( ofMesh& a, ofMesh& b, ofMesh& outMesh )

@@ -7,11 +7,10 @@
 #pragma once
 
 #include <Triangle.h>
-#include <LineSegment.h>
+#include <BoundBox.h>
 
 namespace ofxCSG
 {
-	
 	class Polygon
 	{
 	public:
@@ -27,7 +26,7 @@ namespace ofxCSG
 		
 		void set( ofVec3f a, ofVec3f b, ofVec3f c );
 		
-		void addTriangle( Vertex a, Vertex b, Vertex c );
+		void setClassification( Classification classification );
 		
 		ofVec3f getNormal();
 		
@@ -39,13 +38,6 @@ namespace ofxCSG
 		
 		vector<ofPolyline> toPolylines();
 		
-		//campare two RampItems using their u values
-		static bool compareOfVec3f ( ofVec3f v0, ofVec3f v1);
-		
-		vector<ofVec3f> getVertices();
-		
-//		void split( LineSegment segment );
-		
 		void split( Triangle& t );
 		
 		void split( Polygon& p );
@@ -54,14 +46,26 @@ namespace ofxCSG
 		
 		bool intersectRay( ofVec3f rayOrigin, ofVec3f rayDir, float epsilon, ofVec3f* intersection = NULL );
 		
-		void classify( vector<Polygon> polygons );
+		void classifyRay( Polygon& p, int& intersectionCount );
+		
+		void classify( vector<Polygon>& polygons );
 		
 		void draw(bool useNormalForColor = true);
 		
+		
+		//
 		vector<Triangle> triangles;
+		BoundBox bb;
+		
+		vector< Polygon* > splitters;
+		
+		bool wasSplit;
+		
+		int rayIntersectionCount;
+		
 		
 		//for coplanar splitting
-		vector<ofPolyline> polylines;
-		vector<LineSegment> lineSegments;
+//		vector<ofPolyline> polylines;
+//		vector<LineSegment> lineSegments;
 	};
 }

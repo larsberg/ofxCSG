@@ -10,10 +10,12 @@
 
 namespace ofxCSG
 {
-	Polygon::Polygon()
+	Polygon::Polygon() :
+	rayIntersectionCount( 0 )
 	{}
 	
-	Polygon::Polygon( ofVec3f a, ofVec3f b, ofVec3f c )
+	Polygon::Polygon( ofVec3f a, ofVec3f b, ofVec3f c ) :
+	rayIntersectionCount( 0 )
 	{
 		addTriangle(a, b, c);
 	}
@@ -23,23 +25,28 @@ namespace ofxCSG
 	
 	void Polygon::addTriangle( ofVec3f a, ofVec3f b, ofVec3f c )
 	{
+		bb.addPoints( a, b, c );
 		triangles.push_back( Triangle( a, b, c ) );
 	}
 	
 	void Polygon::addTriangle( Triangle t )
 	{
+		bb.addPoints( t.a, t.b, t.c );
 		triangles.push_back( t );
 	}
 	
 	void Polygon::set( ofVec3f a, ofVec3f b, ofVec3f c )
 	{
 		clear();
-		triangles.push_back( Triangle( a, b, c ) );
+		addTriangle( Triangle( a, b, c ) );
 	}
 	
-	void Polygon::addTriangle( Vertex a, Vertex b, Vertex c )
+	void Polygon::setClassification( Classification classification )
 	{
-		triangles.push_back( Triangle( a, b, c ) );
+		for(auto& t: triangles)
+		{
+			t.classification = classification;
+		}
 	}
 	
 	ofVec3f Polygon::getNormal()
@@ -54,6 +61,7 @@ namespace ofxCSG
 	
 	void Polygon::clear()
 	{
+		bb.clear();
 		triangles.clear();
 	}
 	
@@ -61,7 +69,6 @@ namespace ofxCSG
 	{
 		for(auto& t: triangles)	t.flip();
 	}
-	
 	
 	vector<ofPolyline> Polygon::toPolylines()
 	{
@@ -82,43 +89,6 @@ namespace ofxCSG
 		return polylines;
 	}
 	
-	//campare two RampItems using their u values
-	bool Polygon::compareOfVec3f ( ofVec3f v0, ofVec3f v1)
-	{
-		return v0.x > v1.x || v0.y > v1.y || v0.z > v1.z;
-	}
-	
-	vector<ofVec3f> Polygon::getVertices()
-	{
-		vector<ofVec3f> v;
-		for(auto& t: triangles)
-		{
-			v.push_back( t.a );
-			v.push_back( t.b );
-			v.push_back( t.c );
-		}
-		
-		cout << "v.size(): " << v.size() << " -> ";
-		sort( v.begin(), v.end(), compareOfVec3f );
-		unique( v.begin(), v.end() );
-		cout << v.size() << endl;;
-		
-		return v;
-	}
-	
-//	void Polygon::split( LineSegment segment )
-//	{
-//		vector<Triangle> splitTriangles;
-//		
-//		for(auto t: triangles)
-//		{
-//			auto result = t.splitWithCoplanarSegment( segment );
-//			appendVectors( splitTriangles, result );
-//		}
-//		
-//		triangles = splitTriangles;
-//	}
-	
 	void Polygon::split( Triangle& t )
 	{
 		vector<Triangle> splitTriangles;
@@ -133,13 +103,11 @@ namespace ofxCSG
 	
 	void Polygon::split( Polygon& p )
 	{
-		
-		//TODO: the coplanar splitting is slow! find someone who's smarter and ask them how to do this
-		//
-		//if they're coplanar split them differnetly
+		//TODO: if they're coplanar we should split them differnetly
 		float nDot = getNormal().dot( p.getNormal() );
-		if(false && abs(nDot) >= 1 - EPSILON )
+		if( false && abs(nDot) >= 1 - EPSILON )
 		{
+			cout << "CSG::Polygon::split() - we should create a coplanar split method." << endl;
 		}
 		else
 		{
@@ -171,14 +139,26 @@ namespace ofxCSG
 		return false;
 	}
 	
-	void Polygon::classify( vector<Polygon> polygons )
+	void Polygon::classifyRay( Polygon& p, int& intersectionCount )
 	{
+		ofVec3f rayDir = getNormal();
 		for(auto& t: triangles)
 		{
-			if(t.classification == BACK || t.classification == FRONT)	continue;
-			
 			ofVec3f rayOrigin = t.getCenter();
-			ofVec3f rayDir = getNormal();
+			
+			if( p.intersectRay( rayOrigin, rayDir, EPSILON, NULL ) )
+			{
+				intersectionCount++;
+			}
+		}
+	}
+	
+	void Polygon::classify( vector<Polygon>& polygons )
+	{
+		ofVec3f rayDir = getNormal();
+		for(auto& t: triangles)
+		{	
+			ofVec3f rayOrigin = t.getCenter();
 			
 			int intersectionCount = 0;
 			

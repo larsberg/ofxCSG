@@ -14,6 +14,7 @@ namespace ofxCSG
 	a( a ),
 	b( b ),
 	c( c ),
+	centroid( (a+b+c) / 3 ),
 	classification( UNDEFINED ),
 	normal( normalFromPoints(a, b, c) ),
 	w( normal.dot(a) )
@@ -41,6 +42,7 @@ namespace ofxCSG
 		a = _a;
 		b = _b;
 		c = _c;
+		centroid = (a+b+c) / 3;
 		calcNormal();
 	}
 	
@@ -99,6 +101,72 @@ namespace ofxCSG
 		return false;
 	}
 	
+	bool Triangle::rayIntersect( ofVec3f rayOrigin, ofVec3f rayDir )
+	{
+		ofVec3f diff, edge1, edge2, norm;
+		
+		bool backfaceCulling = true;
+		
+		edge1 = b-a;
+		edge2 = c-a;
+		norm = edge1.cross( edge2 );
+		
+		float sign = 1;
+		
+		float DdN = rayDir.dot( normal );
+		if ( DdN > 0 )
+		{
+			//			if ( backfaceCulling ) return false;
+			sign = 1;
+		}
+		else if ( DdN < 0 )
+		{
+			sign = - 1;
+			DdN = - DdN;
+		}
+		else
+		{
+			return false;
+		}
+		
+		diff = rayOrigin - a;
+		auto DdQxE2 = sign * rayDir.dot( diff.cross( edge2 ) );
+		
+		// b1 < 0, no intersection
+		if ( DdQxE2 < 0 )
+		{
+			return false;
+		}
+		
+		auto DdE1xQ = sign * rayDir.dot( edge1.cross( diff ) );
+		
+		// b2 < 0, no intersection
+		if ( DdE1xQ < 0 )
+		{
+			return false;
+		}
+		
+		// b1+b2 > 1, no intersection
+		if ( DdQxE2 + DdE1xQ > DdN )
+		{
+			return false;
+		}
+		
+		// Line intersects triangle, check if ray does.
+		auto QdN = - sign * diff.dot( normal );
+		
+		// t < 0, no intersection
+		if ( QdN < 0 )
+		{
+			return false;
+		}
+		
+		// Ray intersects triangle.
+		return true;// this.at( QdN / DdN, optionalTarget );
+	}
+	
+	
+	
 	//derived from Akira-Hayasaka's ofxRayTriangleIntersection
 	//	https://github.com/Akira-Hayasaka/ofxRayTriangleIntersection/blob/master/src/ofxRayTriangleIntersection.h
 	//	assume ray direction is normalized
@@ -130,7 +198,7 @@ namespace ofxCSG
 	
 	ofVec3f Triangle::getCenter()
 	{
-		return (a + b + c) / 3.;
+		return centroid;//(a + b + c) / 3.;
 	}
 	
 	void Triangle::draw(bool useNormalForColor )
@@ -175,17 +243,6 @@ namespace ofxCSG
 		classification = getClassification( planeNormal, planeW );
 	}
 	
-	vector<LineSegment> Triangle::getEdges()
-	{
-		vector<LineSegment> edges(3);
-		
-		edges[0].set(a, b);
-		edges[1].set(b, c);
-		edges[2].set(c, a);
-		
-		return edges;
-	}
-	
 	vector<ofVec3f> Triangle::intersectWithPlane( ofVec3f planeNormal, float planeW )
 	{
 		vector<ofVec3f> intersections;
@@ -212,7 +269,7 @@ namespace ofxCSG
 		
 		if(i0.size() < 2 || i1.size() < 2)
 		{
-			cout << "ofxCSG::Triangle::getIntersection() - does this ever happen?" << endl;
+//			cout << "ofxCSG::Triangle::getIntersection() - does this ever happen?" << endl;
 			return false;
 		}
 		
@@ -261,28 +318,6 @@ namespace ofxCSG
 		return triangles;
 	}
 	
-	bool Triangle::coplanarWithTrianle(Triangle& t)
-	{
-		auto nDot = normal.dot( t.normal );
-		
-		if( abs(nDot) >= 1. && abs( distanceToPlane( a, t.a, t.normal ) ) < EPSILON )
-		{
-			return true;
-		}
-		
-		return false;
-	}
-	
-	bool Triangle::doCoplanarTrianglesOverlap(Triangle& t)
-	{
-		for(int i=0; i<3; i++)
-		{
-			if( isPointInTriangle( (*this)[i], t.a, t.b, t.c) || isPointInTriangle( t[i], a, b, c) )	return true;
-		}
-		
-		return false;
-	}
-	
 	vector<Triangle> Triangle::splitWithCoplanarSegment(ofVec3f a, ofVec3f b)
 	{
 		return splitWithCoplanarSegment( LineSegment(a, b) );
@@ -320,32 +355,6 @@ namespace ofxCSG
 			}
 			
 			return triangles;
-		}
-		
-		triangles.push_back( *this );
-		return triangles;
-	}
-	
-	vector<Triangle> Triangle::insertSegment( LineSegment e )
-	{
-		vector<Triangle> triangles;
-		if( e.trimToTriangle( a, b, c ) )
-		{
-			auto firstPass = insert( e.a );
-			for(auto& t: firstPass)
-			{
-				if( isPointInTriangle( e.b, t.a, t.b, t.c, t.normal ) )
-				{
-					auto result = t.insert( e.b );
-					appendVectors( triangles, result );
-				}
-				else
-				{
-					triangles.push_back( t );
-				}
-			}
-			
-			return firstPass;
 		}
 		
 		triangles.push_back( *this );
