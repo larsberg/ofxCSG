@@ -18,12 +18,12 @@ namespace ofxCSG
 		{
 			for(auto& t: p.triangles)
 			{
-//				if(t.classification == FRONT)
-//				{
+				if(t.classification == FRONT)
+				{
 					m.addVertex( t.a );
 					m.addVertex( t.b );
 					m.addVertex( t.c );
-//				}
+				}
 			}
 		}
 	}
@@ -120,7 +120,7 @@ namespace ofxCSG
 		//add the polygons to out outMesh
 		m.clear();
 		addPolygonsToMesh( m, polygonsA );
-//		addPolygonsToMesh( m, polygonsB );
+		addPolygonsToMesh( m, polygonsB );
 	}
 	
 	static void meshUnion( ofMesh& a, ofMesh& b, ofMesh& outMesh )

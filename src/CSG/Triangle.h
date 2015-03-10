@@ -9,7 +9,7 @@
 #include <LineSegment.h>
 
 namespace ofxCSG
-{
+{	
 	class Triangle
 	{
 	public:
@@ -84,7 +84,7 @@ namespace ofxCSG
 			float xpn = diff.dot( normal );
 			float distance = -xpn / vn;
 			
-			if (distance < 0) return false; // behind ray origin. fail
+			if (distance < NEG_EPSILON) return false; // behind ray origin. fail
 			
 			ofVec3f hitPos = rayDir * distance + rayOrigin;
 			
@@ -112,7 +112,7 @@ namespace ofxCSG
 			float xpn = diff.dot( normal );
 			float distance = -xpn / vn;
 			
-			if (distance < 0) return false; // behind ray origin. fail
+			if (distance < NEG_EPSILON) return false; // behind ray origin. fail
 			
 			ofVec3f hitPos = rayDir * distance + rayOrigin;
 			
@@ -168,7 +168,7 @@ namespace ofxCSG
 			}
 			
 			if(frontCount && backCount)	return SPANNING;
-			else if( backCount )	return BACK;
+			else if( backCount  )	return BACK;
 			else if( frontCount )	return FRONT;
 			else return COPLANAR;
 		}
@@ -216,7 +216,7 @@ namespace ofxCSG
 			
 			if(i0.size() < 2 || i1.size() < 2)
 			{
-				cout << "i0.size() < 2 || i1.size() < 2" << endl;
+				cout << "ofxCSG::Triangle::getIntersection() - does this ever happen?" << endl;
 				return false;
 			}
 			
@@ -231,10 +231,9 @@ namespace ofxCSG
 				*overlap = l0;
 				return true;
 			}
-			//TODO: I don't think we need this second pass
 			else if( l1.subtract( l0 ) )
 			{
-				cout << "does this ever happen?" << endl;
+				//TODO: do we need this second pass?
 				*overlap = l1;
 				return true;
 			}
@@ -288,26 +287,6 @@ namespace ofxCSG
 			
 			return false;
 		}
-		
-//		vector<Triangle> coplanarSplit(Triangle& t)
-//		{
-//			vector<Triangle> triangles;
-//			//are they coplanar?
-//			if( coplanarWithTrianle(t) )//do we need EPSILON here?
-//			{
-//				if( doPlanarTrianglesOverlap(t) )
-//				{
-//					auto nDot = normal.dot( t.normal );
-//					
-//					//subtract or add the triangles from each other and return the new triangles
-//					return splitWithCoplanarTriangle( t, nDot );
-//				}
-//			}
-//			
-//			//no intersection
-//			triangles.push_back( *this );
-//			return triangles;
-//		}
 
 		vector<Triangle> splitWithCoplanarSegment(ofVec3f a, ofVec3f b)
 		{
@@ -318,30 +297,63 @@ namespace ofxCSG
 		{
 			vector<Triangle> triangles;
 			
-			//they intersect, let's split using the overlap segment
-			auto firstPass = insert( segment.a );
-			
-			//	we need to trim the line segment for each triangle because we're inserting the end points
-			//	into each triangle to subdivide.
-			for(auto& tri: firstPass)
+			if(segment.trimToTriangle(a, b, c))
 			{
-				auto trimedSegment = segment;
-				trimedSegment.trimToTriangle( tri.a, tri.b, tri.c );
+				//they intersect, let's split using the overlap segment
+				auto firstPass = insert( segment.a );
 				
-				auto subd = tri.insert( trimedSegment.b );
-				if(subd.size() == 1)
+				//	we need to trim the line segment for each triangle because we're inserting the end points
+				//	into each triangle to subdivide.
+				for(auto& tri: firstPass)
 				{
-					subd = tri.insert( trimedSegment.a );
+					auto trimedSegment = segment;
+					if(trimedSegment.trimToTriangle( tri.a, tri.b, tri.c ))
+					{
+						
+						auto subd = tri.insert( trimedSegment.b );
+						if(subd.size() == 1)
+						{
+							subd = tri.insert( trimedSegment.a );
+						}
+						
+						triangles.insert( triangles.end(), subd.begin(), subd.end() );
+					}
+					else
+					{
+						triangles.push_back( tri );
+					}
 				}
 				
-				triangles.insert( triangles.end(), subd.begin(), subd.end() );
+				return triangles;
 			}
 			
-			if(!triangles.size())
+			triangles.push_back( *this );
+			return triangles;
+		}
+		
+		vector<Triangle> insertSegment( LineSegment e )
+		{
+			vector<Triangle> triangles;
+ 			if( e.trimToTriangle( a, b, c ) )
 			{
-				triangles.push_back( *this );
+				auto firstPass = insert( e.a );
+				for(auto& t: firstPass)
+				{
+					if( isPointInTriangle( e.b, t.a, t.b, t.c, t.normal ) )
+					{
+						auto result = t.insert( e.b );
+						appendVectors( triangles, result );
+					}
+					else
+					{
+						triangles.push_back( t );
+					}
+				}
+				
+				return firstPass;
 			}
 			
+			triangles.push_back( *this );
 			return triangles;
 		}
 		
@@ -350,27 +362,30 @@ namespace ofxCSG
 		{
 			vector<Triangle> triangles;
 			
-			auto c = getClassification( t.normal, t.w );
+			auto cl = getClassification( t.normal, t.w );
 			
-			if( c == SPANNING || c == COPLANAR )
+			if( cl == SPANNING )
 			{
 				//otherwise check if the other triangle spans this one
-				c = t.getClassification(normal, w);
+				cl = t.getClassification(normal, w);
 				
 				//if they both span then they might intersect. so we'll find the line segment where they overlap
 				//	and split it with that segment
 				LineSegment overlap;
-				if( c == SPANNING && getIntersection( t, &overlap ) )
+				if( cl == SPANNING && getIntersection( t, &overlap ) )
 				{
 					return splitWithCoplanarSegment( overlap );
-					
-					triangles.push_back( *this );
 				}
 				else
 				{
 					//no intersection
 					triangles.push_back( *this );
 				}
+			}
+			else if( cl == COPLANAR )
+			{
+				//shit...
+				triangles.push_back( *this );
 			}
 			else
 			{
@@ -381,7 +396,30 @@ namespace ofxCSG
 			return triangles;
 		}
 		
-		
+		vector<Triangle> meshToTriangles(ofMesh& m)
+		{
+			vector<Triangle> triangles;
+			
+			auto indices = m.getIndices();
+			auto v = m.getVertices();
+			
+			if(indices.size())
+			{
+				for(int i=0; i<indices.size(); i+=3)
+				{
+					triangles.push_back( Triangle( v[ indices[i] ], v[ indices[i+1] ], v[ indices[i+2] ] ) );
+				}
+			}
+			else
+			{
+				for(int i=0; i<v.size(); i+=3)
+				{
+					triangles.push_back( Triangle( v[i], v[i+1], v[i+2] ) );
+				}
+			}
+			
+			return triangles;
+		}
 		
 		ofVec3f a, b, c;
 		ofVec3f normal;

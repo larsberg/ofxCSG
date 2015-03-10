@@ -111,6 +111,21 @@ namespace ofxCSG
 			return v;
 		}
 		
+		
+		void split( LineSegment segment )
+		{
+			vector<Triangle> splitTriangles;
+			
+			for(auto t: triangles)
+			{
+				auto result = t.splitWithCoplanarSegment( segment );
+				appendVectors( splitTriangles, result );
+			}
+
+			triangles = splitTriangles;
+		}
+		
+		
 		void split( Triangle& t )
 		{
 			vector<Triangle> splitTriangles;
@@ -130,29 +145,8 @@ namespace ofxCSG
 			//
 			//if they're coplanar split them differnetly
 			float nDot = getNormal().dot( p.getNormal() );
-			if( abs(nDot) <= 1 - EPSILON )
+			if(false && abs(nDot) >= 1 - EPSILON )
 			{
-				
-//				if( distanceToPlane( p.triangles[0].a, triangles[0].a, getNormal() ) <= EPSILON )
-				//if( abs( distanceToPlaneSigned( p.triangles[0].a, triangles[0].a, triangles[0].normal ) ) <= EPSILON )
-				if( isPointOnPlane( p.triangles[0].a, getNormal(), getW(), .0001 ) )
-				{
-					cout << "isPointOnPlane" << endl;
-//					auto p0 = toPolylines();
-//					auto p1 = p.toPolylines();
-//					
-//					ofTessellator tess;
-//					tess.tessellateToPolylines( p0, OF_POLY_WINDING_POSITIVE, p0 );
-//					
-////					p1.insert( p0.end(), p1.begin(), p1.end() );
-//					
-//					ofMesh m;
-//					tess.tessellateToMesh( p0, OF_POLY_WINDING_POSITIVE, m );
-//					
-//					triangles = meshToTriangles( m );
-//					cout << "coplanarSplit:: triangles.size(): " << triangles.size() << endl;
-					
-				}
 			}
 			else
 			{
@@ -217,6 +211,8 @@ namespace ofxCSG
 		
 		vector<Triangle> triangles;
 		
-		vector<ofPolyline> temp;
+		//for coplanar splitting
+		vector<ofPolyline> polylines;
+		vector<LineSegment> lineSegments;
 	};
 }

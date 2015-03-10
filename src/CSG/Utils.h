@@ -32,6 +32,13 @@ namespace ofxCSG
 		return a + (b - a) * k;
 	}
 	
+	template<class T>
+	static void appendVectors( vector<T>& a, vector<T>& b )
+	{
+		//a.reserve( a.size() + b.size() );
+		a.insert( a.end(), b.begin(), b.end() );
+	}
+	
 	static ofVec3f normalFromPoints(ofVec3f p0, ofVec3f p1, ofVec3f p2)
 	{
 		return (p2 - p1).cross( p0 - p1).normalize();
@@ -241,8 +248,8 @@ namespace ofxCSG
 		auto d0 = distanceToPlaneSigned( p0, planePos, planeNormal );
 		auto d1 = distanceToPlaneSigned( p1, planePos, planeNormal );
 		
-		//if( (d0 >= EPSILON && d1 >= EPSILON) || ( d0 <= NEG_EPSILON && d1 <= NEG_EPSILON ) )
-		if( (d0 > 0 && d1 > 0) || ( d0 < 0 && d1 < 0 ) )
+		if( (d0 >= EPSILON && d1 >= EPSILON) || ( d0 <= NEG_EPSILON && d1 <= NEG_EPSILON ) )
+//		if( (d0 > 0 && d1 > 0) || ( d0 < 0 && d1 < 0 ) )
 		{
 			//no intersection
 			return 0;
@@ -250,6 +257,10 @@ namespace ofxCSG
 		if( d0 == 0 && d1 == 0 )
 		{
 			//it's coplanar
+			if( intersection != NULL )
+			{
+				*intersection = p0;
+			}
 			return 2;
 		}
 		
@@ -261,6 +272,7 @@ namespace ofxCSG
 		}
 		return 1;
 	}
+	
 	
 	static bool isPointInTriangle(ofVec3f p, ofVec3f a, ofVec3f b, ofVec3f c, ofVec3f normal )
 	{
