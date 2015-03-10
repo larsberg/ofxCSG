@@ -3,22 +3,35 @@
 //--------------------------------------------------------------
 void ofApp::setup()
 {
-	ofSetLogLevel( OF_LOG_VERBOSE );
+//	ofSetLogLevel( OF_LOG_VERBOSE );
 	
-	ofxObjLoader::load("torus1.obj", m0); // box0
-	ofxObjLoader::load("sphere0.obj", m1); // box1
+//	ofxObjLoader::load("torus1.obj", m0); // box0
+//	ofxObjLoader::load("sphere0.obj", m1); // box1
 	
 //	ofxObjLoader::load("coplanar1.obj", m0 );
 //	ofxObjLoader::load("coplanar0.obj", m1 );
 	
-//	ofxObjLoader::load( "box0.obj", m0 );
-//	ofxObjLoader::load( "box1.obj", m1 );
-	
-	ofxCSG::meshUnion( m0, m1, m0 );
+	ofxObjLoader::load( "box0.obj", m0 );
+	ofxObjLoader::load( "box1.obj", m1 );
 }
 
 //--------------------------------------------------------------
-void ofApp::update(){
+void ofApp::update()
+{
+	ofMesh mesh0 = m0, mesh1 = m1;
+	
+	ofMatrix4x4 transform;
+	
+	transform.translate( sin(ofGetElapsedTimef() ) * 10, 0, 0);
+	transform.rotate( ofGetElapsedTimef() * 10, 0, .1, 1);
+	
+	auto& vertices = mesh1.getVertices();
+	for(auto& v: vertices)
+	{
+		v = v * transform;
+	}
+	
+	ofxCSG::meshIntersection( mesh0, mesh1, mesh );
 
 }
 
@@ -37,15 +50,9 @@ void ofApp::draw()
 	ofScale(10, 10, 10);
 	
 	ofSetColor(255, 45);
-	m0.draw();
+	mesh.draw();
 	ofSetColor(255);
-	m0.drawWireframe();
-	
-	ofSetColor(255, 0, 0);
-	for(auto& p: polylines)
-	{
-		p.draw();
-	}
+	mesh.drawWireframe();
 	
 	ofPopMatrix();
 	
