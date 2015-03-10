@@ -3,14 +3,14 @@
 //--------------------------------------------------------------
 void ofApp::setup()
 {
-	ofxObjLoader::load("torus1.obj", m0); // box0
-	ofxObjLoader::load("sphere0.obj", m1); // box1
+//	ofxObjLoader::load("torus1.obj", m0); // box0
+//	ofxObjLoader::load("sphere0.obj", m1); // box1
 	
 //	ofxObjLoader::load("coplanar1.obj", m0 );
 //	ofxObjLoader::load("coplanar0.obj", m1 );
 	
-//	ofxObjLoader::load( "box0.obj", m0 );
-//	ofxObjLoader::load( "box1.obj", m1 );
+	ofxObjLoader::load( "box0.obj", m0 );
+	ofxObjLoader::load( "box1.obj", m1 );
 	
 	ofxCSG::meshUnion( m0, m1, m0 );
 }

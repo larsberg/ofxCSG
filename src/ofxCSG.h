@@ -11,7 +11,6 @@
 
 namespace ofxCSG
 {
-	
 	static void addPolygonsToMesh(ofMesh& m, vector<ofxCSG::Polygon>& polygons)
 	{
 		for(auto& p: polygons)
