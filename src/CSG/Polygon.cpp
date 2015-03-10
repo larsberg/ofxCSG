@@ -103,20 +103,20 @@ namespace ofxCSG
 	
 	void Polygon::split( Polygon& p )
 	{
-		//TODO: if they're coplanar we should split them differnetly
-		float nDot = getNormal().dot( p.getNormal() );
-		if( false && abs(nDot) >= 1 - EPSILON )
-		{
-			cout << "CSG::Polygon::split() - we should create a coplanar split method." << endl;
-		}
-		else
-		{
+//		//TODO: if they're coplanar we should split them differnetly
+//		float nDot = getNormal().dot( p.getNormal() );
+//		if( false && abs(nDot) >= 1 - EPSILON )
+//		{
+//			cout << "CSG::Polygon::split() - we should create a coplanar split method." << endl;
+//		}
+//		else
+//		{
 			//otherwise split the triangles individually
 			for( auto& t: p.triangles )
 			{
 				split( t );
 			}
-		}
+//		}
 	}
 	
 	void Polygon::split( ofVec3f t0, ofVec3f t1, ofVec3f t2 )

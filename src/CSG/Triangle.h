@@ -50,7 +50,7 @@ namespace ofxCSG
 		
 		vector<ofVec3f> intersectWithPlane( ofVec3f planeNormal, float planeW );
 		
-		bool getIntersection( Triangle& t, LineSegment* overlap );
+		bool getIntersection( Triangle t, LineSegment* overlap );
 		
 		vector<Triangle> insert( ofVec3f v );
 
@@ -58,7 +58,7 @@ namespace ofxCSG
 		
 		vector<Triangle> splitWithCoplanarSegment(LineSegment segment);
 		
-		vector<Triangle> split( Triangle& t );
+		vector<Triangle> split( Triangle t );
 		
 		vector<Triangle> meshToTriangles(ofMesh& m);
 		

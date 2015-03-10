@@ -223,13 +223,13 @@ namespace ofxCSG
 	
 	Classification Triangle::getClassification( ofVec3f planeNormal, float planeW )
 	{
-		
 		int frontCount = 0, backCount = 0;
+		Classification classyFries;
 		for(int i=0; i<3; i++)
 		{
-			auto c = classifyPointWithPlane( (*this)[i], planeNormal, planeW);
-			if(c == FRONT)	frontCount++;
-			else if(c == BACK)	backCount++;
+			classyFries = classifyPointWithPlane( (*this)[i], planeNormal, planeW);
+			if( classyFries == FRONT)	frontCount++;
+			else if( classyFries == BACK)	backCount++;
 		}
 		
 		if(frontCount && backCount)	return SPANNING;
@@ -260,7 +260,7 @@ namespace ofxCSG
 		return intersections;
 	}
 	
-	bool Triangle::getIntersection( Triangle& t, LineSegment* overlap )
+	bool Triangle::getIntersection( Triangle t, LineSegment* overlap )
 	{
 		//TODO:: have intersect with plane return a LineSegment
 		auto i0 = intersectWithPlane( t.normal, t.w );
@@ -361,7 +361,7 @@ namespace ofxCSG
 		return triangles;
 	}
 	
-	vector<Triangle> Triangle::split( Triangle& t )
+	vector<Triangle> Triangle::split( Triangle t )
 	{
 		vector<Triangle> triangles;
 		
