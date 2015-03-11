@@ -30,7 +30,7 @@ void ofApp::update()
 	}
 	
 	transform.rotate( t * 10, 0, .1, 1);
-	transform.translate( sin( t ) * 10, 0, 0);
+	transform.translate( sin( t * .2 ) * 10, 0, 0);
 	
 	auto& vertices = mesh1.getVertices();
 	for(auto& v: vertices)

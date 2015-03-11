@@ -227,7 +227,25 @@ namespace ofxCSG
 		Classification classyFries;
 		for(int i=0; i<3; i++)
 		{
-			classyFries = classifyPointWithPlane( (*this)[i], planeNormal, planeW);
+			classyFries = smdp( (*this)[i], <#ofVec3f planeNormal#>, <#ofVec3f planePoint#>);//classifyPointWithPlane( (*this)[i], planeNormal, planeW);
+			if( classyFries == FRONT)	frontCount++;
+			else if( classyFries == BACK)	backCount++;
+		}
+		
+		if(frontCount && backCount)	return SPANNING;
+		else if( backCount  )	return BACK;
+		else if( frontCount )	return FRONT;
+		else return COPLANAR;
+	}
+	
+	Classification Triangle::getClassification( ofVec3f planeNormal, float planePos )
+	{
+		int frontCount = 0, backCount = 0;
+		Classification classyFries;
+		for(int i=0; i<3; i++)
+		{
+			float d = smdp( (*this)[i], planeNormal, planePos )
+			classyFries =  ? ;//classifyPointWithPlane( (*this)[i], planeNormal, planeW);
 			if( classyFries == FRONT)	frontCount++;
 			else if( classyFries == BACK)	backCount++;
 		}
@@ -243,6 +261,7 @@ namespace ofxCSG
 		classification = getClassification( planeNormal, planeW );
 	}
 	
+	
 	vector<ofVec3f> Triangle::intersectWithPlane( ofVec3f planeNormal, float planeW )
 	{
 		vector<ofVec3f> intersections;
@@ -251,10 +270,19 @@ namespace ofxCSG
 		
 		for(int i=0, j=1; i<3; i++, j++)
 		{
-			if( splitLineSegmentWithPlane( (*this)[i], (*this)[j%3], planeNormal, planeW, &intersection) )
-			{
-				intersections.push_back( intersection );
-			}
+			ofVec3f a = (*this)[i];
+			ofVec3f b = (*this)[j%3];
+			
+			//			float da =
+			
+			//			if( splitLineSegmentWithPlane( a, (*this)[j%3], planeNormal, planeW, &intersection ) )
+			//			{
+			//				intersections.push_back( intersection );
+			//			}
+			//			if( splitLineSegmentWithPlane( (*this)[i], (*this)[j%3], planeNormal, planeW, &intersection) )
+			//			{
+			//				intersections.push_back( intersection );
+			//			}
 		}
 		
 		return intersections;
@@ -263,8 +291,8 @@ namespace ofxCSG
 	bool Triangle::getIntersection( Triangle t, LineSegment* overlap )
 	{
 		//TODO:: have intersect with plane return a LineSegment
-		auto i0 = intersectWithPlane( t.normal, t.w );
-		auto i1 = t.intersectWithPlane( normal, w );
+		auto i0 = intersectWithPlane( t.normal, t.a);//intersectWithPlane( t.normal, t.w );
+		auto i1 = t.intersectWithPlane( normal, a );
 		
 		
 		if(i0.size() < 2 || i1.size() < 2)
@@ -294,30 +322,6 @@ namespace ofxCSG
 		return false;
 	}
 	
-	vector<Triangle> Triangle::insertPoint( ofVec3f v )
-	{
-		vector<Triangle> triangles;
-//		
-//		if( abs(distanceToPlaneSigned( v, a, normal) ) > EPSILON)
-//		{
-//			triangles.push_back( *this );
-//			return triangles;
-//		}
-		
-		//make three triangles
-		for(int i=0; i<3; i++)
-		{
-			Triangle t( (*this)[i], (*this)[(i+1)%3], v);
-			t.classification - classification;
-			if(t.getArea() > EPSILON)
-			{
-				triangles.push_back(t);
-			}
-		}
-		
-		return triangles;
-	}
-	
 	vector<Triangle> Triangle::splitWithCoplanarSegment(ofVec3f a, ofVec3f b)
 	{
 		return splitWithCoplanarSegment( LineSegment(a, b) );
@@ -330,7 +334,7 @@ namespace ofxCSG
 		if(segment.trimToTriangle(a, b, c))
 		{
 			//they intersect, let's split using the overlap segment
-			auto firstPass = insert( segment.a );
+			auto firstPass = insertPoint( segment.a );
 			
 			//	we need to trim the line segment for each triangle because we're inserting the end points
 			//	into each triangle to subdivide.
@@ -339,13 +343,13 @@ namespace ofxCSG
 				auto trimedSegment = segment;
 				if(trimedSegment.trimToTriangle( tri.a, tri.b, tri.c ))
 				{
-					auto subd = tri.insertPoint( trimedSegment.b );
-					if(subd.size() == 1)
+					auto result = tri.insertPoint( trimedSegment.b );
+					if(result.size() == 1)
 					{
-						subd = tri.insertPoint( trimedSegment.a );
+						result = tri.insertPoint( trimedSegment.a );
 					}
 					
-					triangles.insert( triangles.end(), subd.begin(), subd.end() );
+					appendVectors( triangles, result );
 				}
 				else
 				{
@@ -360,6 +364,82 @@ namespace ofxCSG
 		return triangles;
 	}
 	
+	
+	vector<Triangle> Triangle::insertPoint( ofVec3f v )
+	{
+		vector<Triangle> triangles;
+		
+		//make three triangles
+		for(int i=0, j=1; i<3; i++, j++)
+		{
+			if( closestPointOnLineSegment( v, (*this)[i], (*this)[j%3] ).distance( v ) > EPSILON)
+			{
+				triangles.push_back( Triangle( (*this)[i], (*this)[j%3], v) );
+			}
+		}
+		
+		return triangles;
+	}
+	
+	vector<Triangle> Triangle::triangleSplit(Triangle t)
+	{
+		vector<Triangle> triangles;
+		
+		auto intersectionPoints = intersectWithPlane( t.normal, t.a );
+		auto temp = t.intersectWithPlane( normal, a );
+		appendVectors( intersectionPoints, temp );
+		
+		triangles.push_back( *this );
+		
+		for( auto& p: intersectionPoints )
+		{
+			vector<Triangle> subd;
+			for(auto& tri: triangles)
+			{
+				if( isPointInTriangle( p, tri.a, tri.b, tri.c, NEG_EPSILON) )
+				{
+					auto result = tri.insertPoint( p );
+					appendVectors( subd, result );
+				}
+				else
+				{
+					subd.push_back( tri );
+				}
+			}
+			triangles = subd;
+		}
+		
+		return triangles;
+	}
+	
+	vector<ofVec3f> Triangle::intersectWithPlane( ofVec3f planeNormal, ofVec3f planePos )
+	{
+		vector<ofVec3f> intersections;
+		
+		ofVec3f intersection;
+		
+		for(int i=0, j=1; i<3; i++, j++)
+		{
+			ofVec3f a = (*this)[i];
+			ofVec3f b = (*this)[j%3];
+			
+			float da = smdp( a, planeNormal, planePos );
+			float db = smdp( b, planeNormal, planePos );
+			
+			if( (da >= 0 && db < 0) || (da < 0 && db >= 0) )
+			{
+				float lerpVal = ofMap( 0, da, db, 0, 1);
+				
+				if(lerpVal >= 0 && lerpVal < 1)
+				{
+					intersections.push_back( lerp( a, b, lerpVal ) );
+				}
+			}
+		}
+		
+		return intersections;
+	}
+	
 	vector<Triangle> Triangle::split( Triangle t )
 	{
 		vector<Triangle> triangles;
@@ -368,15 +448,13 @@ namespace ofxCSG
 		
 		if( cl == SPANNING )
 		{
-			//otherwise check if the other triangle spans this one
-			cl = t.getClassification(normal, w);
-			
 			//if they both span then they might intersect. so we'll find the line segment where they overlap
 			//	and split it with that segment
 			LineSegment overlap;
-			if( cl == SPANNING && getIntersection( t, &overlap ) )
+			if( t.getClassification(normal, w) == SPANNING && getIntersection( t, &overlap ) )
 			{
-				return triangleSplit( t );//splitWithCoplanarSegment( overlap );
+				return splitWithCoplanarSegment( overlap );
+//				return triangleSplit( t );//splitWithCoplanarSegment( overlap );
 			}
 			else
 			{

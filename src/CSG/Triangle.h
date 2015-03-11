@@ -46,7 +46,11 @@ namespace ofxCSG
 		
 		Classification getClassification( ofVec3f planeNormal, float planeW );
 		
+		Classification getClassification( ofVec3f planeNormal, ofVec3f planePos );
+		
 		void classifyWithPlane( ofVec3f planeNormal, float planeW );
+		
+		vector<ofVec3f> intersectWithPlane( ofVec3f planeNormal, ofVec3f planePos );
 		
 		vector<ofVec3f> intersectWithPlane( ofVec3f planeNormal, float planeW );
 		
@@ -56,6 +60,7 @@ namespace ofxCSG
 		{
 			return insertPoint(v);
 		}
+		
 		vector<Triangle> insertPoint( ofVec3f v );
 
 		vector<Triangle> splitWithCoplanarSegment(ofVec3f a, ofVec3f b);
@@ -65,12 +70,7 @@ namespace ofxCSG
 		vector<Triangle> split( Triangle t );
 		
 		
-		vector<Triangle> triangleSplit(Triangle t)
-		{
-			vector<Triangle> triangles;
-			
-			return triangles;
-		}
+		vector<Triangle> triangleSplit(Triangle t);
 		
 		vector<Triangle> meshToTriangles(ofMesh& m);
 		
