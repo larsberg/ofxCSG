@@ -17,7 +17,7 @@ class ofApp : public ofBaseApp{
 	
 	ofEasyCam camera;
 	
-	ofMesh m0, m1, mesh;
+	ofMesh m0, m1, mesh, otherMesh;
 	
 	
 	ofxCSG::Polygon cp0, cp1;

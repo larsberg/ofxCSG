@@ -5,12 +5,6 @@ void ofApp::setup()
 {
 //	ofSetLogLevel( OF_LOG_VERBOSE );
 	
-//	ofxObjLoader::load("torus1.obj", m0); // box0
-//	ofxObjLoader::load("sphere0.obj", m1); // box1
-	
-//	ofxObjLoader::load("coplanar1.obj", m0 );
-//	ofxObjLoader::load("coplanar0.obj", m1 );
-	
 	ofxObjLoader::load( "box0.obj", m0 );
 	ofxObjLoader::load( "box1.obj", m1 );
 }
@@ -31,7 +25,7 @@ void ofApp::update()
 		v = v * transform;
 	}
 	
-	ofxCSG::meshIntersection( mesh0, mesh1, mesh );
+	ofxCSG::meshUnion( mesh0, mesh1, mesh );
 
 }
 
