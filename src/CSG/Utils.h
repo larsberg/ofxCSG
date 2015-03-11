@@ -60,11 +60,6 @@ namespace ofxCSG
 		return dist;
 	}
 	
-	static float smdp( ofVec3f p, ofVec3f planeNormal, ofVec3f planePoint )
-	{
-		return planeNormal.normalize().dot( p - planePoint );
-	}
-	
 	//http://geomalgorithms.com/a04-_planes.html
 	static float distanceToPlane(ofVec3f point, ofVec3f planePos, ofVec3f planeNormal)
 	{
@@ -243,20 +238,19 @@ namespace ofxCSG
 	
 	static bool splitLineSegmentWithPlane( ofVec3f l0, ofVec3f l1, ofVec3f planeNormal, float w, ofVec3f* intersection)
 	{
-//		auto c0 = classifyPointWithPlane( l0, planeNormal, w);
-//		auto c1 = classifyPointWithPlane( l1, planeNormal, w);
-//		
-//		if( c0 != c1 )
-//		{
-		float k = (w - planeNormal.dot(l0)) / planeNormal.dot( l1 - l0 );
+		auto c0 = classifyPointWithPlane( l0, planeNormal, w);
+		auto c1 = classifyPointWithPlane( l1, planeNormal, w);
 		
-		if(  k < 0 || k > 1 )
+		if( c0 != c1 )
 		{
-			return false;
+			float k = (w - planeNormal.dot(l0)) / planeNormal.dot( l1 - l0 );
+			
+			*intersection = lerp( l0, l1, CLAMP(k, 0, 1) ); // the clamp fixed some errors where k > 1
+			
+			return true;
 		}
 		
-		*intersection = lerp( l0, l1, k ); // the clamp fixed some errors where k > 1
-		return true;
+		return false;
 	}
 	
 	static int intersectLineSegmentPlane(ofVec3f p0, ofVec3f p1, ofVec3f planePos, ofVec3f planeNormal, ofVec3f* intersection = NULL)
@@ -328,7 +322,7 @@ namespace ofxCSG
 		
 		if( getBaryCentricCoords( p, a, b, c, u, v, w ) )
 		{
-			return u > epsilon && v > epsilon && w > epsilon; // && 1. - (u + v) > epsilon;//
+			return u > epsilon && v > epsilon && w > epsilon;
 		}
 		
 		return false;

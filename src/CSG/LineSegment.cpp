@@ -77,106 +77,106 @@ namespace ofxCSG
 	
 	bool LineSegment::trimToTriangle( ofVec3f ta, ofVec3f tb, ofVec3f tc)
 	{
-//		bool aInside = isPointInTriangle( a, ta, tb, tc, NEG_EPSILON);
-//		bool bInside = isPointInTriangle( b, ta, tb, tc, NEG_EPSILON);
-//		
-//		if( aInside && bInside)	return true;
-//		
-//		vector<ofVec3f> points;
-//		ofVec3f intersection;
-//		
-//		float epsilon = EPSILON * 10;
-//		
-//		if( intersectLineSegments( a, b, ta, tb, &intersection, epsilon ) )
-//		{
-//			points.push_back( intersection );
-//		}
-//		
-//		if( intersectLineSegments( a, b, tb, tc, &intersection, epsilon ) )
-//		{
-//			points.push_back( intersection );
-//		}
-//		
-//		if( intersectLineSegments( a, b, tc, ta, &intersection, epsilon ) )
-//		{
-//			points.push_back( intersection );
-//		}
-//		
-//		if(points.size() == 0)
-//		{
-//			return false;
-//		}
-//		
-//		if( aInside )
-//		{
-//			b = points[0];
-//			
-//			for(int i=1; i<points.size(); i++)	expandToPoint( points[i] );
-//			
-//			return true;
-//		}
-//		
-//		
-//		if( bInside )
-//		{
-//			a = points[0];
-//			
-//			for(int i=1; i<points.size(); i++)	expandToPoint( points[i] );
-//			
-//			return true;
-//		}
+		bool aInside = isPointInTriangle( a, ta, tb, tc, NEG_EPSILON);
+		bool bInside = isPointInTriangle( b, ta, tb, tc, NEG_EPSILON);
 		
+		if( aInside && bInside)	return true;
 		
-		//get the intersections
-		vector<ofVec3f> intersections;
+		vector<ofVec3f> points;
 		ofVec3f intersection;
-		ofVec3f normal = normalFromPoints( ta, tb, tc);
 		
-		//if the points are inside let's keep them
-		if( isPointInTriangle( a, ta, tb, tc, normal, NEG_EPSILON ))
+		float epsilon = EPSILON * 10;
+		
+		if( intersectLineSegments( a, b, ta, tb, &intersection, epsilon ) )
 		{
-			intersections.push_back( a );
-		}
-		if( isPointInTriangle( b, ta, tb, tc, normal, NEG_EPSILON ))
-		{
-			intersections.push_back( b );
+			points.push_back( intersection );
 		}
 		
-		// if there both inside we're done
-		if(intersections.size() == 2)	return true;
-		
-		
-		// otherwise let's intersect with the triangle edges
-		if(intersectLineSegments(a, b, ta, tb, &intersection))
+		if( intersectLineSegments( a, b, tb, tc, &intersection, epsilon ) )
 		{
-			intersections.push_back( intersection );
-		}
-		if(intersectLineSegments(a, b, tb, tc, &intersection))
-		{
-			intersections.push_back( intersection );
-		}
-		if(intersectLineSegments(a, b, tc, ta, &intersection))
-		{
-			intersections.push_back( intersection );
+			points.push_back( intersection );
 		}
 		
-		//rebuild a ine segment if there's enough intersections
-		if( intersections.size() > 1 )
+		if( intersectLineSegments( a, b, tc, ta, &intersection, epsilon ) )
 		{
-			LineSegment trimmedLine(intersections[0], intersections[1]);
+			points.push_back( intersection );
+		}
+		
+		if(points.size() == 0)
+		{
+			return false;
+		}
+		
+		if( aInside )
+		{
+			b = points[0];
 			
-			for(int i=2; i<intersections.size(); i++)
-			{
-				trimmedLine.expandToPoint( intersections[i] );
-			}
-			
-			a = trimmedLine.a;
-			b = trimmedLine.b;
+			for(int i=1; i<points.size(); i++)	expandToPoint( points[i] );
 			
 			return true;
 		}
 		
-		return false;
+		
+		if( bInside )
+		{
+			a = points[0];
+			
+			for(int i=1; i<points.size(); i++)	expandToPoint( points[i] );
+			
+			return true;
+		}
+		
+//		
+//		//get the intersections
+//		vector<ofVec3f> intersections;
+//		ofVec3f intersection;
+//		ofVec3f normal = normalFromPoints( ta, tb, tc);
+//		
+//		//if the points are inside let's keep them
+//		if( isPointInTriangle( a, ta, tb, tc, normal, NEG_EPSILON ))
+//		{
+//			intersections.push_back( a );
+//		}
+//		if( isPointInTriangle( b, ta, tb, tc, normal, NEG_EPSILON ))
+//		{
+//			intersections.push_back( b );
+//		}
+//		
+//		// if there both inside we're done
+//		if(intersections.size() == 2)	return true;
+//		
+//		
+//		// otherwise let's intersect with the triangle edges
+//		if(intersectLineSegments(a, b, ta, tb, &intersection))
+//		{
+//			intersections.push_back( intersection );
+//		}
+//		if(intersectLineSegments(a, b, tb, tc, &intersection))
+//		{
+//			intersections.push_back( intersection );
+//		}
+//		if(intersectLineSegments(a, b, tc, ta, &intersection))
+//		{
+//			intersections.push_back( intersection );
+//		}
+//		
+//		//rebuild a ine segment if there's enough intersections
+//		if( intersections.size() > 1 )
+//		{
+//			LineSegment trimmedLine(intersections[0], intersections[1]);
+//			
+//			for(int i=2; i<intersections.size(); i++)
+//			{
+//				trimmedLine.expandToPoint( intersections[i] );
+//			}
+//			
+//			a = trimmedLine.a;
+//			b = trimmedLine.b;
+//			
+//			return true;
+//		}
+//		
+//		return false;
 	}
 	
 	ofVec3f* LineSegment::getPtr()
