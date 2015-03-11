@@ -13,6 +13,8 @@ void ofApp::setup()
 	
 	ofxObjLoader::load( "box0.obj", m0 );
 	ofxObjLoader::load( "box1.obj", m1 );
+	
+	paused = false;
 }
 
 //--------------------------------------------------------------
@@ -22,8 +24,13 @@ void ofApp::update()
 	
 	ofMatrix4x4 transform;
 	
-	transform.translate( sin(ofGetElapsedTimef() ) * 10, 0, 0);
-	transform.rotate( ofGetElapsedTimef() * 10, 0, .1, 1);
+	if(!paused )
+	{
+		t += .01666;
+	}
+	
+	transform.rotate( t * 10, 0, .1, 1);
+	transform.translate( sin( t ) * 10, 0, 0);
 	
 	auto& vertices = mesh1.getVertices();
 	for(auto& v: vertices)
@@ -31,7 +38,7 @@ void ofApp::update()
 		v = v * transform;
 	}
 	
-	ofxCSG::meshIntersection( mesh0, mesh1, mesh );
+	ofxCSG::meshUnion( mesh0, mesh1, mesh );
 
 }
 
@@ -47,7 +54,7 @@ void ofApp::draw()
 	camera.begin();
 	
 	ofPushMatrix();
-	ofScale(10, 10, 10);
+	ofScale( 20, 20, 20 );
 	
 	ofSetColor(255, 45);
 	mesh.draw();
@@ -64,4 +71,16 @@ void ofApp::draw()
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
 
+	if(key == 'p')
+	{
+		paused = !paused;
+	}
+	else if( key == 'a')
+	{
+		t += .01666;
+	}
+	else if( key == 'A')
+	{
+		t -= .01666;
+	}
 }

@@ -294,22 +294,22 @@ namespace ofxCSG
 		return false;
 	}
 	
-	vector<Triangle> Triangle::insert( ofVec3f v )
+	vector<Triangle> Triangle::insertPoint( ofVec3f v )
 	{
 		vector<Triangle> triangles;
-		
-		if( abs(distanceToPlaneSigned( v, a, normal) ) > EPSILON)
-		{
-			triangles.push_back( *this );
-			return triangles;
-		}
+//		
+//		if( abs(distanceToPlaneSigned( v, a, normal) ) > EPSILON)
+//		{
+//			triangles.push_back( *this );
+//			return triangles;
+//		}
 		
 		//make three triangles
 		for(int i=0; i<3; i++)
 		{
 			Triangle t( (*this)[i], (*this)[(i+1)%3], v);
 			t.classification - classification;
-			if(t.getAreaSquared() > EPSILON)
+			if(t.getArea() > EPSILON)
 			{
 				triangles.push_back(t);
 			}
@@ -339,11 +339,10 @@ namespace ofxCSG
 				auto trimedSegment = segment;
 				if(trimedSegment.trimToTriangle( tri.a, tri.b, tri.c ))
 				{
-					
-					auto subd = tri.insert( trimedSegment.b );
+					auto subd = tri.insertPoint( trimedSegment.b );
 					if(subd.size() == 1)
 					{
-						subd = tri.insert( trimedSegment.a );
+						subd = tri.insertPoint( trimedSegment.a );
 					}
 					
 					triangles.insert( triangles.end(), subd.begin(), subd.end() );
@@ -377,7 +376,7 @@ namespace ofxCSG
 			LineSegment overlap;
 			if( cl == SPANNING && getIntersection( t, &overlap ) )
 			{
-				return splitWithCoplanarSegment( overlap );
+				return triangleSplit( t );//splitWithCoplanarSegment( overlap );
 			}
 			else
 			{

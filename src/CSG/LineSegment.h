@@ -27,6 +27,8 @@ namespace ofxCSG
 		
 		bool subtract( ofVec3f p0, ofVec3f p1 );
 		
+		bool intersect( ofVec3f l0, ofVec3f l1, ofVec3f* intersection );
+		
 		bool trimToTriangle( ofVec3f ta, ofVec3f tb, ofVec3f tc);
 		
 		ofVec3f* getPtr();

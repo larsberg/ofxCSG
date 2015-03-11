@@ -146,7 +146,7 @@ namespace ofxCSG
 		{
 			ofVec3f rayOrigin = t.getCenter();
 			
-			if( p.intersectRay( rayOrigin, rayDir, EPSILON, NULL ) )
+			if( p.intersectRay( rayOrigin, rayDir, 0, NULL ) )
 			{
 				intersectionCount++;
 			}
@@ -164,7 +164,7 @@ namespace ofxCSG
 			
 			for( auto& p: polygons )
 			{
-				if( p.intersectRay( rayOrigin, rayDir, EPSILON, NULL ) )
+				if( p.intersectRay( rayOrigin, rayDir, 0, NULL ) )
 				{
 					intersectionCount++;
 				}

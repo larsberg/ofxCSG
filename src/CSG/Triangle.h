@@ -52,13 +52,25 @@ namespace ofxCSG
 		
 		bool getIntersection( Triangle t, LineSegment* overlap );
 		
-		vector<Triangle> insert( ofVec3f v );
+		vector<Triangle> insert( ofVec3f v )
+		{
+			return insertPoint(v);
+		}
+		vector<Triangle> insertPoint( ofVec3f v );
 
 		vector<Triangle> splitWithCoplanarSegment(ofVec3f a, ofVec3f b);
 		
 		vector<Triangle> splitWithCoplanarSegment(LineSegment segment);
 		
 		vector<Triangle> split( Triangle t );
+		
+		
+		vector<Triangle> triangleSplit(Triangle t)
+		{
+			vector<Triangle> triangles;
+			
+			return triangles;
+		}
 		
 		vector<Triangle> meshToTriangles(ofMesh& m);
 		
