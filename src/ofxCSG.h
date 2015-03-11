@@ -95,6 +95,7 @@ namespace ofxCSG
 					pb.splitters.push_back( &orig_polygonsA[i] );
 				}
 				
+				
 				//classify FRONT||BACK where we can
 				if(pa.triangles.size() == 1)
 				{
@@ -109,10 +110,10 @@ namespace ofxCSG
 		{
 			for( auto& pa: pb.splitters )
 			{
-				//if( pa->bb.intersects( pb.bb ))
-				//{
+				if( pa->bb.intersects( pb.bb ))
+				{
 					pb.split( *pa );
-				//}
+				}
 			}
 			
 			pb.wasSplit = pb.triangles.size() > 1;
@@ -165,61 +166,6 @@ namespace ofxCSG
 		addPolygonsToMesh( m, polygonsA );
 		addPolygonsToMesh( m, polygonsB );
 		ofLogVerbose( "ofxCSG::meshBoolean", "create mesh time: " + ofToString((ofGetElapsedTimeMillis() - startTime)) );
-	}
-	
-	static void meshBooleanOld( ofMesh& a, ofMesh& b, ofMesh& m, bool flipA, bool flipB)
-	{
-		
-		// get our polygons
-		auto polygonsA = meshToPolygons( a );
-		auto polygonsB = meshToPolygons( b );
-		
-		auto orig_polygonsA = polygonsA;
-		auto orig_polygonsB = polygonsB;
-		
-		//split the polygons with eachother
-		for(auto& pa: polygonsA)
-		{
-			for( auto& pb: orig_polygonsB )
-			{
-				pa.split( pb );
-			}
-		}
-		
-		for(auto& pb: polygonsB)
-		{
-			for( auto& pa: orig_polygonsA )
-			{
-				pb.split( pa );
-			}
-		}
-		
-		//classy the triangles
-		ofVec3f rayDir(0,1,0);
-		for(auto& p: polygonsA)
-		{
-			p.classify( orig_polygonsB );
-		}
-		
-		for(auto& p: polygonsB)
-		{
-			p.classify( orig_polygonsA );
-		}
-		
-		if(flipA)
-		{
-			for(auto& p: polygonsA)	p.flip();
-		}
-		
-		if(flipB)
-		{
-			for(auto& p: polygonsB)	p.flip();
-		}
-		
-		//add the polygons to out outMesh
-		m.clear();
-		addPolygonsToMesh( m, polygonsA );
-		addPolygonsToMesh( m, polygonsB );
 	}
 	
 	static void meshUnion( ofMesh& a, ofMesh& b, ofMesh& outMesh )

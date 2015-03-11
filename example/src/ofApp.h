@@ -22,7 +22,4 @@ class ofApp : public ofBaseApp{
 	
 	ofxCSG::Polygon cp0, cp1;
 	vector<ofVec3f> intersectionPoints;
-	
-	bool paused;
-	float t;
 };

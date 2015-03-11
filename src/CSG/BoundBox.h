@@ -84,6 +84,19 @@ namespace ofxCSG
 		bool isPointInside( ofVec3f p )
 		{
 			return minBound.x <= p.x && p.x <= maxBound.x && minBound.y <= p.y && p.y <= maxBound.y && minBound.z <= p.z && p.z <= maxBound.z;
+//			if( minBound.x <= p.x && p.x <= maxBound.x )
+//			{
+//				if( minBound.y <= p.y && p.y <= maxBound.y )
+//				{
+//					if( minBound.z <= p.z && p.z <= maxBound.z )
+//					{
+//						return true;
+//					}
+//					return false;
+//				}
+//				return false;
+//			}
+//			return false;
 		}
 		
 		bool intersects( BoundBox& bb )

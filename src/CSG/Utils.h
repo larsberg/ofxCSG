@@ -150,13 +150,9 @@ namespace ofxCSG
 	}
 	
 	
-	//
-	// adapted from: http://paulbourke.net/geometry/pointlineplane/lineline.c
-	//
-	static bool LineLineIntersect( ofVec3f p1,ofVec3f p2,ofVec3f p3,ofVec3f p4, ofVec3f* intersection=NULL, float epsilon=EPSILON )
+	//http://paulbourke.net/geometry/pointlineplane/lineline.c
+	static bool LineLineIntersect( ofVec3f p1,ofVec3f p2,ofVec3f p3,ofVec3f p4, ofVec3f *pa = NULL, ofVec3f *pb = NULL )
 	{
-		ofVec3f pa, pb;
-		
 		ofVec3f p13, p43, p21;
 		double d1343,d4321,d1321,d4343,d2121;
 		double numer,denom;
@@ -184,19 +180,16 @@ namespace ofxCSG
 		double mua = numer / denom;
 		double mub = (d1343 + d4321 * mua) / d4343;
 		
-		pa = p1 + mua * p21;
-		pb = p3 + mub * p43;
-		
-		if( pa.distance( pb ) <= epsilon )
+		if( pa != NULL)
 		{
-			if(intersection != NULL)
-			{
-				*intersection = pa;
-			}
-			return true;
+			*pa = p1 + mua * p21;
+		}
+		if( pb != NULL )
+		{
+			*pb = p3 + mub * p43;
 		}
 		
-		return false;
+		return true;
 	}
 	
 	static float getLineSegmentUValue(ofVec3f l0, ofVec3f l1, ofVec3f p)
@@ -218,19 +211,16 @@ namespace ofxCSG
 		return  u >= NEG_EPSILON && u <= ONE_PLUS_EPSILON;
 	}
 	
-	static bool intersectLineSegments( ofVec3f a0, ofVec3f a1, ofVec3f b0, ofVec3f b1, ofVec3f* intersection=NULL, float epsilon=EPSILON )
+	static bool intersectLineSegments(ofVec3f a0, ofVec3f a1, ofVec3f b0, ofVec3f b1, ofVec3f* intersection=NULL)
 	{
 		ofVec3f p;
 		
-		if( LineLineIntersect(a0, a1, b0, b1, &p, epsilon) )
+		LineLineIntersect(a0, a1, b0, b1, &p);
+		
+		if( isPointInLineSegment(a0, a1, p) )
 		{
-			if( isPointInLineSegment(a0, a1, p) )
-			{
-				*intersection = p;
-				return true;
-			}
-			
-			return false;
+			*intersection = p;
+			return true;
 		}
 		
 		return false;
@@ -305,18 +295,6 @@ namespace ofxCSG
 	}
 	
 	static bool isPointInTriangle(ofVec3f p, ofVec3f a, ofVec3f b, ofVec3f c, ofVec3f normal, float epsilon )
-	{
-		float u, v, w;
-		
-		if( getBaryCentricCoords( p, a, b, c, u, v, w ) )
-		{
-			return u > epsilon && v > epsilon && w > epsilon;
-		}
-		
-		return false;
-	}
-	
-	static bool isPointInTriangle(ofVec3f p, ofVec3f a, ofVec3f b, ofVec3f c, float epsilon )
 	{
 		float u, v, w;
 		
